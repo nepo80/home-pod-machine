@@ -28,7 +28,7 @@
 html { background: var(--black); }
 body { margin: 0; background: var(--black); color: var(--white); font: 400 clamp(1.0625rem, 1.2vw, 1.1875rem)/1.47 var(--body); letter-spacing: -0.011em; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
 
-#view { position: fixed; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; z-index: 0; animation: arrive 0.9s ease-out backwards; }
+#view { position: fixed; inset: 0; width: 100%; height: 100%; height: 100lvh; display: block; pointer-events: none; z-index: 0; animation: arrive 0.9s ease-out backwards; }
 .scrim { position: fixed; z-index: 1; left: 0; right: 0; bottom: 0; height: 58vh; pointer-events: none; display: none;
   background: linear-gradient(to top, #000 0%, #000 52%, rgba(0,0,0,0.78) 70%, rgba(0,0,0,0) 100%); }
 
@@ -220,7 +220,7 @@ h2 { font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.08; letter-spacing: -0.
 @keyframes run { 0% { transform: translateX(-100%); } 60%, 100% { transform: translateX(100%); } }
 
 @media (max-width: 800px) {
-  .top { flex-direction: column; gap: 2px; padding-top: 12px; }
+  .top { flex-direction: column; gap: 2px; padding-top: 12px; padding-bottom: 22px; background: linear-gradient(to bottom, #000 0%, rgba(0,0,0,0.88) 68%, rgba(0,0,0,0) 100%); }
   .top .note { text-align: left; font-size: 11px; }
   section { flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 24px; padding: 96px var(--gutter) 44px; }
   .copy::before { margin-bottom: 18px; }
@@ -398,6 +398,8 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 
 
 
+if (!CanvasRenderingContext2D.prototype.roundRect) CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) { r = Math.min(r, w / 2, h / 2); this.moveTo(x + r, y); this.arcTo(x + w, y, x + w, y + h, r); this.arcTo(x + w, y + h, x, y + h, r); this.arcTo(x, y + h, x, y, r); this.arcTo(x, y, x + w, y, r); this.closePath(); };
+
 /* ---------- Counting: one row per page view and per tap on the button, sent to the team's Google Form.
    A row holds the event (view or tap) and the group from the link (#p1, #p2, #p3; otherwise none). Nothing about the visitor. ---------- */
 const COUNT_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSeOwYpo8mNUuV7g1eulR6b3GMRHXnu-Q5nURwDpQlGpMff7vg/formResponse';
@@ -423,17 +425,19 @@ try { if (localStorage.getItem('podMachineTap')) { counted = true; document.docu
 const W = 12, BASE_H = 1.2, TOP = 26, BACK = -14.9, FRONT = 14.1;
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const canvas = document.getElementById('view');
+const lite = matchMedia('(pointer: coarse)').matches || innerWidth <= 800;      // phones and tablets get a lighter scene
+let dpr = Math.min(devicePixelRatio || 1, lite ? 1.5 : 2), onSceneResize = () => {};
 let renderer;
-try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true }); }
+try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: testRender, powerPreference: 'high-performance' }); }
 catch (e) { canvas.style.display = 'none'; throw e; }
-renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+renderer.setPixelRatio(dpr);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.0;
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(28, 1, 1, 600);
 
-renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.VSMShadowMap;   // soft shadows from the one shadow light
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = lite ? THREE.PCFSoftShadowMap : THREE.VSMShadowMap;   // soft shadows from the one shadow light
 
 /* Light: a kitchen at night. A warm 3000 K strip under the wall cabinet washes the wall behind the machine; that wash, not coloured rim light,
    is what lifts the black body off the background. The body itself is shaped by large soft panels in its environment, a neutral key from the
@@ -459,7 +463,7 @@ const key = spot(0xffffff, 1.2, [26, 46, 62], [0, 11, 2], 0.42);
 const rimL = spot(WARM_WHITE, 1.2, [-40, 22, -40], [0, 14, 0], 0.36);
 const rimR = spot(WARM_WHITE, 0.4, [22, 16, -52], [0, 14, 0], 0.36);
 const back = spot(0xffe6c8, 2.4, [10, 37, -36], [2, 0, 14], 0.8, 1);     // top light from above and behind: the pool on the worktop and the one shadow (paler than the strip, so steel and aluminium do not turn copper)
-back.castShadow = true; back.shadow.mapSize.set(1024, 1024); back.shadow.camera.near = 8; back.shadow.camera.far = 240;
+back.castShadow = true; back.shadow.mapSize.set(lite ? 512 : 1024, lite ? 512 : 1024); back.shadow.camera.near = 8; back.shadow.camera.far = 240;
 back.shadow.bias = -0.0004; back.shadow.radius = 4; back.shadow.blurSamples = 12;
 const wash = spot(WARM, 3.5, [-7, 27, -24], [-7, 6, -54], 1.05);         // the strip's softer reach down the wall, aimed away from the machine
 const strip = new THREE.RectAreaLight(WARM, 24, 86, 1.4);                // the strip itself, 86 cm long; it hangs under the cabinet (kitchen block)
@@ -692,7 +696,7 @@ function vesselVisibility() {   // a cup needs the shelf down, a mug needs it fo
 
 
 drawMark();
-if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { drawMark(); drawn = ''; });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { drawMark(); drawn = ''; wake(1); });
 
 for (const m of [M.alu, M.aluSoft]) m.envMapIntensity = 0.7;
 
@@ -767,7 +771,7 @@ const kitchen = (() => {
   wall.position.set(0, WALL_H / 2, WALL_Z); scene.add(wall);
 
   /* Worktop, with the mirror image of the scene added on top of the stone: dim, slightly blurred, stronger at flat angles */
-  const mirror = new Reflector(new THREE.PlaneGeometry(1, 1), { textureWidth: 512, textureHeight: 512, multisample: 4 });
+  const mirror = new Reflector(new THREE.PlaneGeometry(1, 1), { textureWidth: 512, textureHeight: 512, multisample: lite ? 0 : 4 });
   mirror.rotation.x = -Math.PI / 2; mirror.position.y = 0.02; mirror.updateMatrixWorld();      // never added to the scene; rendered by hand in update()
   const mirrorRT = mirror.getRenderTarget(); mirrorRT.texture.generateMipmaps = true; mirrorRT.texture.minFilter = THREE.LinearMipmapLinearFilter;
   const mirrorInv = mirror.matrixWorld.clone().invert(), mirrorMat = new THREE.Matrix4(), mirrorPx = new THREE.Vector2(1 / 512, 1 / 512);
@@ -789,10 +793,10 @@ const kitchen = (() => {
   const top = new THREE.Mesh(new THREE.PlaneGeometry(SPAN, FRONT_Z - WALL_Z), stone);
   top.rotation.x = -Math.PI / 2; top.position.set(0, 0, (FRONT_Z + WALL_Z) / 2); top.receiveShadow = true; scene.add(top);
   const sizeMirror = () => {
-    const k = Math.min(0.5 * renderer.getPixelRatio(), 1280 / Math.max(innerWidth, innerHeight)), w = Math.max(2, Math.round(innerWidth * k)), h = Math.max(2, Math.round(innerHeight * k));
+    const k = Math.min((lite ? 0.3 : 0.5) * renderer.getPixelRatio(), 1280 / Math.max(innerWidth, innerHeight)), w = Math.max(2, Math.round(innerWidth * k)), h = Math.max(2, Math.round(innerHeight * k));
     mirrorRT.setSize(w, h); mirrorPx.set(1 / w, 1 / h);
   };
-  addEventListener('resize', sizeMirror); sizeMirror();
+  onSceneResize = sizeMirror; sizeMirror();
 
   /* Wall cabinet: a matt black block whose underside carries the LED line; the strip light hangs with it */
   const cab = new THREE.Group(); scene.add(cab);
@@ -857,7 +861,7 @@ function show(grp, keyName, fn, time) {
   if (grp !== group) { fadeAt = group === '' || reduceMotion ? -1 : time; group = grp; }
   const fading = fadeAt >= 0 && time - fadeAt < 0.3;
   if (keyName === drawn && !fading) return;
-  drawn = keyName; fn();
+  drawn = keyName; fn(); wake(0.3);
   if (fading) { sx.fillStyle = `rgba(0,0,0,${(1 - (time - fadeAt) / 0.3).toFixed(3)})`; sx.fillRect(0, 0, SW, SH); drawn = ''; }
   scrTex.needsUpdate = true;
 }
@@ -887,7 +891,9 @@ const KEYS_TALL = [
   { p: [20, 20, 82], t: [1.6, 12.4, 0],   ox: 0, oy: 0.2 },
   { p: [10, 19, 78], t: [1.2, 12.4, 0],   ox: 0, oy: 0.2 }
 ];
-let f = 0, fs = 0, forced = null;
+let f = 0, fs = 0, forced = null, vw = 0, vh = 0, awakeUntil = 3;
+const clock = new THREE.Clock();
+const wake = s => { awakeUntil = Math.max(awakeUntil, clock.elapsedTime + s); };      // on phones the scene is drawn only while something changes
 function readScroll() {
   const y = scrollY; let i = 0;
   while (i < LAST && sections[i + 1].offsetTop <= y) i++;
@@ -898,7 +904,18 @@ function readScroll() {
   root.classList.toggle('scrolled', f > 0.08);
 }
 addEventListener('scroll', readScroll, { passive: true });
-function resize() { renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.fov = wide() ? 28 : 50; readScroll(); }
+function resize() {
+  const w = innerWidth, h = Math.round(canvas.clientHeight) || innerHeight;
+  if (lite && w === vw && Math.abs(h - vh) < vh * 0.2) { readScroll(); return; }      // a phone toolbar sliding in or out is not a resize
+  vw = w; vh = h; renderer.setSize(w, h, false); camera.aspect = w / h; camera.fov = wide() ? 28 : 50; onSceneResize(); wake(1); readScroll();
+}
+// if frames take too long, draw fewer pixels
+let gN = 0, gSum = 0;
+function govern(dt) {
+  gSum += dt; if (++gN < 45) return;
+  const slow = gSum / gN > 0.036; gN = 0; gSum = 0;
+  if (slow && dpr > 1 && !testRender) { dpr = Math.max(1, dpr - 0.25); renderer.setPixelRatio(dpr); renderer.setSize(vw, vh, false); onSceneResize(); }
+}
 addEventListener('resize', resize); resize(); fs = f;
 
 const pA = new THREE.Vector3(), pB = new THREE.Vector3(), tA = new THREE.Vector3(), tB = new THREE.Vector3(), look = new THREE.Vector3();
@@ -906,12 +923,17 @@ const clamp01 = x => Math.min(Math.max(x, 0), 1);
 const smooth = x => { x = clamp01(x); return x * x * (3 - 2 * x); };
 const inOut = x => { x = clamp01(x); return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
 showVessel('cup', true, true); setLevel(3.8);
-const clock = new THREE.Clock(); let pourT = 0, wasPour = false, appSince = -1, fixedScreen = null;
+let pourT = 0, wasPour = false, appSince = -1, fixedScreen = null;
 
 function frame() {
+  requestAnimationFrame(frame);
+  try { step(); } catch (e) { if (!frame.failed) { frame.failed = true; console.error(e); } }
+}
+function step() {
   const dt = Math.min(clock.getDelta(), 0.05), time = clock.elapsedTime;
+  if (Math.abs(f - fs) > 0.0004) wake(0.4);
   fs = reduceMotion ? f : fs + (f - fs) * Math.min(1, dt * 6);
-  const w = innerWidth, h = innerHeight, keys = wide() ? KEYS_WIDE : KEYS_TALL;
+  const w = vw, h = vh, keys = wide() ? KEYS_WIDE : KEYS_TALL;
   const i = Math.min(Math.floor(fs), LAST - 1), frac = fs - i, e = inOut((frac - 0.25) / 0.5);     // the camera travels only while no text is on screen
   const A = keys[i], B = keys[i + 1];
   pA.fromArray(A.p); pB.fromArray(B.p); tA.fromArray(A.t); tB.fromArray(B.t);
@@ -919,7 +941,7 @@ function frame() {
   camera.setViewOffset(w, h, w * (A.ox + (B.ox - A.ox) * e), h * (A.oy + (B.oy - A.oy) * e), w, h);
   camera.updateProjectionMatrix();
   const still = 1 - Math.sin(Math.PI * e);                                                        // 1 at rest, 0 mid-travel
-  machine.rotation.y = reduceMotion ? 0 : Math.sin(time * 0.4) * 0.03 * still;
+  machine.rotation.y = reduceMotion || lite ? 0 : Math.sin(time * 0.4) * 0.03 * still;
 
   // copy and phone: fully visible within 0.12 of their section, gone by 0.30
   if (pinned) {
@@ -940,7 +962,7 @@ function frame() {
   // what the machine does in each part; it changes only after the camera has arrived
   const part = Math.min(Math.floor(fs + 0.25), LAST);
   if (part === 2 && !reduceMotion) {
-    if (!wasPour) pourT = 0; pourT += dt;
+    if (!wasPour) pourT = 0; pourT += dt; wake(0.3);
     const k = clamp01((pourT - 0.9) / 4.2), level = 0.6 + (3.8 - 0.6) * k;
     setLevel(k > 0 ? level : 0); stream.visible = k > 0 && k < 1;
     const bottom = VESSELS.cup.base + level; stream.scale.y = SPOUT_TIP - bottom; stream.position.y = (SPOUT_TIP + bottom) / 2;
@@ -954,10 +976,12 @@ function frame() {
   }
   wasPour = part === 2;
   vesselVisibility();
-  kitchen.update(fs);
+  if (!lite || time < awakeUntil) {
+    kitchen.update(fs);
 
-  renderer.render(scene, camera);
-  requestAnimationFrame(frame);
+    renderer.render(scene, camera);
+    govern(dt);
+  }
 }
 /* Still renders for checking: #at-<section, e.g. 2 or 2.5>, optional app screen: #at-4-s2 */
 { const m = location.hash.match(/^#at-([\d.]+)(?:-s(\d))?$/); if (m) { forced = parseFloat(m[1]); readScroll(); fs = f; pourT = 3.4; wasPour = true; if (m[2]) fixedScreen = m[2]; } }
