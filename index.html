@@ -47,7 +47,7 @@ h1 { font-size: clamp(2.75rem, 5.6vw, 5rem); line-height: 1.05; letter-spacing: 
 h2 { font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.08; letter-spacing: -0.018em; max-width: 12ch; }
 .copy p { margin: 0 0 2rem; color: var(--soft); max-width: 26rem; }
 .hero h1 { animation: fadeup 0.7s var(--ease) 0.15s backwards; }
-.hero .copy p { animation: fadeup 0.7s var(--ease) 0.45s backwards; }
+.hero .copy > p { animation: fadeup 0.7s var(--ease) 0.45s backwards; }
 .hero .act { animation: fadeup 0.7s var(--ease) 0.6s backwards; }
 
 .act { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
@@ -60,8 +60,21 @@ h2 { font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.08; letter-spacing: -0.
 .thanks { display: none; max-width: 26rem; margin: 0; }
 .thanks strong { display: block; font-weight: 600; font-size: 1.35rem; line-height: 1.2; letter-spacing: -0.015em; color: var(--gold-bright); margin-bottom: 0.35rem; }
 .thanks span { font-size: 13px; line-height: 1.4; letter-spacing: 0; color: var(--soft); }
-.tapped .cta, .tapped .aside { display: none; }
-.tapped .thanks { display: block; animation: fadeup 0.6s var(--ease) backwards; }
+.mail { display: none; width: 100%; max-width: 26rem; margin: 0; }
+.mail label { display: block; font-size: 1.05rem; font-weight: 600; line-height: 1.25; letter-spacing: -0.012em; color: var(--white); margin-bottom: 0.7rem; }
+.mail-row { display: flex; gap: 10px; }
+.mail input { flex: 1; min-width: 0; height: 48px; padding: 0 20px; font: 400 17px var(--body); letter-spacing: -0.011em; color: var(--white); background: rgba(8, 8, 8, 0.78);
+  border: 1px solid var(--line); border-radius: 999px; outline: none; transition: border-color 0.15s linear; -webkit-appearance: none; appearance: none; }
+.mail input::placeholder { color: var(--quiet); opacity: 1; }
+.mail input:focus-visible { border-color: var(--gold-bright); box-shadow: 0 0 0 1px var(--gold-bright); }
+.mail input[aria-invalid="true"] { border-color: #f0a58a; }
+.mail .cta { flex: none; padding: 0 24px; }
+.copy .mail-note { font-size: 12px; line-height: 1.4; letter-spacing: 0; color: var(--soft); margin: 0.75rem 0 0; }
+.copy .mail-err { font-size: 13px; line-height: 1.4; letter-spacing: 0; color: #f0a58a; margin: 0.6rem 0 0; }
+.tapped .act > .cta, .tapped .aside { display: none; }
+.tapped .mail { display: block; animation: fadeup 0.6s var(--ease) backwards; }
+.mailed .mail { display: none; }
+.mailed .thanks { display: block; animation: fadeup 0.6s var(--ease) backwards; }
 
 .cue { position: fixed; z-index: 3; left: var(--gutter); bottom: 26px; font-size: 12px; letter-spacing: 0; color: var(--soft); display: flex; align-items: center; gap: 12px; transition: opacity 0.4s linear; }
 .cue i { display: block; width: 56px; height: 1px; background: var(--line); position: relative; overflow: hidden; }
@@ -73,7 +86,8 @@ h2 { font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.08; letter-spacing: -0.
 .closing .copy::before, .closing h2, .closing .copy p { margin-left: auto; margin-right: auto; }
 .closing h2 { max-width: 16ch; }
 .closing .act { justify-content: center; }
-.closing .thanks { margin: 0 auto; }
+.closing .thanks, .closing .mail { margin: 0 auto; }
+.closing .copy .mail-note, .closing .copy .mail-err { margin-left: auto; margin-right: auto; }
 .closing .copy p.foot { margin: 2rem auto 0; font-size: 12px; line-height: 1.33; letter-spacing: 0; color: var(--quiet); max-width: 30rem; }
 
 .phone-stage { --phone-h: min(66vh, 600px); flex: none; margin-left: auto; margin-right: 8vw; }
@@ -256,8 +270,17 @@ h2 { font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.08; letter-spacing: -0.
       <p>One slim machine for everyone at home. Each of you gets the cup you like.</p>
       <div class="act">
         <button class="cta" type="button">Notify me</button>
-        <p class="aside">One tap. No sign-up.</p>
-        <p class="thanks" role="status"><strong>Thank you. Your tap is counted.</strong><span>This is a concept test, so there is no waiting list yet. We count taps and store nothing about you.</span></p>
+        <p class="aside">Then leave your email. Nothing else.</p>
+        <form class="mail" novalidate>
+          <label for="mail-top">Where should we notify you?</label>
+          <div class="mail-row">
+            <input id="mail-top" type="email" name="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" maxlength="254" placeholder="name@example.com" aria-describedby="mail-top-note">
+            <button class="cta" type="submit">Send</button>
+          </div>
+          <p class="mail-err" role="alert" hidden>That does not look like an email address. Please check it.</p>
+          <p class="mail-note" id="mail-top-note">Your email goes to the student team behind this concept test and to nobody else.</p>
+        </form>
+        <p class="thanks" role="status"><strong>Thank you. We have your email.</strong><span>This is a concept test, so there is no product to buy yet. Your email stays with the student team.</span></p>
       </div>
     </div>
   </section>
@@ -373,10 +396,19 @@ h2 { font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.08; letter-spacing: -0.
   <section class="closing">
     <div class="copy">
       <h2>Would you want it in your kitchen?</h2>
-      <p>Tell us with one tap. That is all we ask.</p>
+      <p>Tap the button and leave your email. That is all we ask.</p>
       <div class="act">
         <button class="cta" type="button">Notify me</button>
-        <p class="thanks" role="status"><strong>Thank you. Your tap is counted.</strong><span>This is a concept test, so there is no waiting list yet. We count taps and store nothing about you.</span></p>
+        <form class="mail" novalidate>
+          <label for="mail-end">Where should we notify you?</label>
+          <div class="mail-row">
+            <input id="mail-end" type="email" name="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" maxlength="254" placeholder="name@example.com" aria-describedby="mail-end-note">
+            <button class="cta" type="submit">Send</button>
+          </div>
+          <p class="mail-err" role="alert" hidden>That does not look like an email address. Please check it.</p>
+          <p class="mail-note" id="mail-end-note">Your email goes to the student team behind this concept test and to nobody else.</p>
+        </form>
+        <p class="thanks" role="status"><strong>Thank you. We have your email.</strong><span>This is a concept test, so there is no product to buy yet. Your email stays with the student team.</span></p>
       </div>
       <p class="foot">Student concept for a course at ESCP Business School, November 2026. Not a Lavazza product and not affiliated with Lavazza.</p>
     </div>
@@ -400,26 +432,49 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 
 if (!CanvasRenderingContext2D.prototype.roundRect) CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) { r = Math.min(r, w / 2, h / 2); this.moveTo(x + r, y); this.arcTo(x + w, y, x + w, y + h, r); this.arcTo(x + w, y + h, x, y + h, r); this.arcTo(x, y + h, x, y, r); this.arcTo(x, y, x + w, y, r); this.closePath(); };
 
-/* ---------- Counting: one row per page view and per tap on the button, sent to the team's Google Form.
-   A row holds the event (view or tap) and the group from the link (#p1, #p2, #p3; otherwise none). Nothing about the visitor. ---------- */
+/* ---------- Counting: one row per page view, per tap on the button and per email left, sent to the team's Google Form.
+   A row holds the event (view, tap or email) and the group from the link (#p1, #p2, #p3; otherwise none).
+   An email row also holds the address the visitor typed. Nothing else about the visitor. ---------- */
 const COUNT_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSeOwYpo8mNUuV7g1eulR6b3GMRHXnu-Q5nURwDpQlGpMff7vg/formResponse';
 const linkGroup = (location.hash.match(/^#(p1|p2|p3|test)$/) || [0, 'none'])[1];
 const testRender = /^#at-/.test(location.hash);
-function count(event) {
+function count(event, email) {
   if (testRender) return;
-  try { fetch(COUNT_URL, { method: 'POST', mode: 'no-cors', keepalive: true, body: new URLSearchParams({ 'entry.1904125127': event, 'entry.394037258': linkGroup }) }).catch(() => {}); } catch (e) {}
+  const row = { 'entry.1904125127': event, 'entry.394037258': linkGroup };
+  if (email) row['entry.928176698'] = email;
+  try { fetch(COUNT_URL, { method: 'POST', mode: 'no-cors', keepalive: true, body: new URLSearchParams(row) }).catch(() => {}); } catch (e) {}
 }
 count('view');
 
-/* ---------- The one button ---------- */
-let counted = false;
-const tapped = () => {
-  document.documentElement.classList.add('tapped');
+/* ---------- The one button, then the email ---------- */
+const page = document.documentElement, touch = matchMedia('(pointer: coarse)').matches;
+let counted = false, mailed = false, typing = false, typedAt = 0;
+const keep = k => { try { localStorage.setItem(k, '1'); } catch (e) {} };
+const kept = k => { try { return !!localStorage.getItem(k); } catch (e) { return false; } };
+const tapped = e => {
+  page.classList.add('tapped');
   if (!counted) { counted = true; count('tap'); }
-  try { localStorage.setItem('podMachineTap', '1'); } catch (e) {}
+  keep('podMachineTap');
+  const field = e.currentTarget.parentNode.querySelector('.mail input');
+  if (field && !touch) field.focus({ preventScroll: true });
 };
-for (const b of document.querySelectorAll('.cta')) b.addEventListener('click', tapped);
-try { if (localStorage.getItem('podMachineTap')) { counted = true; document.documentElement.classList.add('tapped'); } } catch (e) {}
+for (const b of document.querySelectorAll('.act > .cta')) b.addEventListener('click', tapped);
+for (const form of document.querySelectorAll('.mail')) {
+  const field = form.querySelector('input'), err = form.querySelector('.mail-err');
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const v = field.value.trim();
+    if (v.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) { err.hidden = false; field.setAttribute('aria-invalid', 'true'); field.focus({ preventScroll: true }); return; }
+    if (!mailed) { mailed = true; count('email', v); }
+    keep('podMachineMail'); field.blur(); page.classList.add('mailed');
+  });
+  field.addEventListener('input', () => { err.hidden = true; field.removeAttribute('aria-invalid'); });
+  // while the keyboard is up the page holds still, and returns to where it was afterwards
+  field.addEventListener('focus', () => { typing = true; typedAt = scrollY; });
+  field.addEventListener('blur', () => { typing = false; if (touch && Math.abs(scrollY - typedAt) > 2) scrollTo(0, typedAt); });
+}
+if (kept('podMachineTap')) { counted = true; page.classList.add('tapped'); }
+if (kept('podMachineMail')) { mailed = true; page.classList.add('tapped', 'mailed'); }
 
 /* ---------- Scene (1 unit = 1 cm) ---------- */
 const W = 12, BASE_H = 1.2, TOP = 26, BACK = -14.9, FRONT = 14.1;
@@ -895,6 +950,7 @@ let f = 0, fs = 0, forced = null, vw = 0, vh = 0, awakeUntil = 3;
 const clock = new THREE.Clock();
 const wake = s => { awakeUntil = Math.max(awakeUntil, clock.elapsedTime + s); };      // on phones the scene is drawn only while something changes
 function readScroll() {
+  if (typing) return;
   const y = scrollY; let i = 0;
   while (i < LAST && sections[i + 1].offsetTop <= y) i++;
   const a = sections[i].offsetTop, b = i < LAST ? sections[i + 1].offsetTop : a + 1;
@@ -983,8 +1039,8 @@ function step() {
     govern(dt);
   }
 }
-/* Still renders for checking: #at-<section, e.g. 2 or 2.5>, optional app screen: #at-4-s2 */
-{ const m = location.hash.match(/^#at-([\d.]+)(?:-s(\d))?$/); if (m) { forced = parseFloat(m[1]); readScroll(); fs = f; pourT = 3.4; wasPour = true; if (m[2]) fixedScreen = m[2]; } }
+/* Still renders for checking: #at-<section, e.g. 2 or 2.5>, optional app screen: #at-4-s2, optional button state: #at-0-tap, #at-5-mail */
+{ const m = location.hash.match(/^#at-([\d.]+)(?:-s(\d))?(?:-(tap|mail))?$/); if (m) { if (m[3]) page.classList.add('tapped'); if (m[3] === 'mail') page.classList.add('mailed'); forced = parseFloat(m[1]); readScroll(); fs = f; pourT = 3.4; wasPour = true; if (m[2]) fixedScreen = m[2]; } }
 frame();
 </script>
 </body>
