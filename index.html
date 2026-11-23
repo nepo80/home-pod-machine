@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home Pod Machine Landing Page Test</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..600&display=swap">
+<style>
+:root {
+  /* Black page, warm white type, one gold accent, one typeface. Single dark theme by choice.
+     Layout: the product stays fixed in a dark kitchen; one block of copy at a time fades in beside it (below it on phones). */
+  --black: #000000;
+  --white: #f5f2ec;
+  --soft: #a8a39b;
+  --quiet: #7a756e;
+  --gold: #c9a961;
+  --gold-bright: #e8cf96;
+  --gold-hover: #d8bd7c;
+  --line: rgba(201, 169, 97, 0.4);
+  --display: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --body: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --gutter: max(clamp(20px, 6vw, 96px), calc((100vw - 1260px) / 2));
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { background: var(--black); }
+body { margin: 0; background: var(--black); color: var(--white); font: 400 clamp(1.0625rem, 1.2vw, 1.1875rem)/1.47 var(--body); letter-spacing: -0.011em; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+
+#view { position: fixed; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; z-index: 0; animation: arrive 0.9s ease-out backwards; }
+.scrim { position: fixed; z-index: 1; left: 0; right: 0; bottom: 0; height: 58vh; pointer-events: none; display: none;
+  background: linear-gradient(to top, #000 0%, #000 52%, rgba(0,0,0,0.78) 70%, rgba(0,0,0,0) 100%); }
+
+.top { position: fixed; z-index: 4; left: 0; right: 0; top: 0; display: flex; justify-content: space-between; gap: 16px 32px; align-items: baseline;
+  padding: 18px var(--gutter); font-size: 12px; line-height: 1.33; letter-spacing: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.85), rgba(0,0,0,0)); }
+.top .name { font-weight: 600; font-size: 15px; letter-spacing: -0.01em; white-space: nowrap; }
+.top .name span { color: var(--gold); font-weight: 400; }
+.top .note { color: var(--soft); text-align: right; max-width: 30rem; margin: 0; }
+
+main { position: relative; z-index: 2; }
+section { min-height: 100vh; min-height: 100svh; display: flex; align-items: center; gap: 48px; padding: 120px var(--gutter) 64px; }
+.copy { max-width: 30rem; }
+.copy::before { content: ""; display: block; width: 72px; height: 1px; background: var(--gold); margin-bottom: 28px; }
+h1, h2 { font-family: var(--display); font-weight: 600; margin: 0 0 1.1rem; text-wrap: balance; }
+h1 { font-size: clamp(2.75rem, 5.6vw, 5rem); line-height: 1.05; letter-spacing: -0.022em; max-width: 11ch; }
+h2 { font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.08; letter-spacing: -0.018em; max-width: 12ch; }
+.copy p { margin: 0 0 2rem; color: var(--soft); max-width: 26rem; }
+.hero h1 { animation: fadeup 0.7s var(--ease) 0.15s backwards; }
+.hero .copy p { animation: fadeup 0.7s var(--ease) 0.45s backwards; }
+.hero .act { animation: fadeup 0.7s var(--ease) 0.6s backwards; }
+
+.act { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
+.cta { font: 500 17px var(--body); letter-spacing: -0.011em; color: #000; cursor: pointer; background: var(--gold); border: 0; border-radius: 999px;
+  height: 48px; padding: 0 28px; transition: background-color 0.15s linear; }
+.cta:hover { background: var(--gold-hover); }
+.cta:active { background: #b8974f; }
+.cta:focus-visible { outline: none; box-shadow: 0 0 0 3px #000, 0 0 0 5px var(--white); }
+.aside { font-size: 12px; line-height: 1.33; letter-spacing: 0; color: var(--soft); margin: 0; }
+.thanks { display: none; max-width: 26rem; margin: 0; }
+.thanks strong { display: block; font-weight: 600; font-size: 1.35rem; line-height: 1.2; letter-spacing: -0.015em; color: var(--gold-bright); margin-bottom: 0.35rem; }
+.thanks span { font-size: 13px; line-height: 1.4; letter-spacing: 0; color: var(--soft); }
+.tapped .cta, .tapped .aside { display: none; }
+.tapped .thanks { display: block; animation: fadeup 0.6s var(--ease) backwards; }
+
+.cue { position: fixed; z-index: 3; left: var(--gutter); bottom: 26px; font-size: 12px; letter-spacing: 0; color: var(--soft); display: flex; align-items: center; gap: 12px; transition: opacity 0.4s linear; }
+.cue i { display: block; width: 56px; height: 1px; background: var(--line); position: relative; overflow: hidden; }
+.cue i::after { content: ""; position: absolute; inset: 0; background: var(--gold-bright); transform: translateX(-100%); animation: run 2.4s ease-in-out infinite; }
+.scrolled .cue { opacity: 0; }
+
+.closing { align-items: flex-end; justify-content: center; text-align: center; padding-bottom: 64px; }
+.closing .copy { max-width: 36rem; }
+.closing .copy::before, .closing h2, .closing .copy p { margin-left: auto; margin-right: auto; }
+.closing h2 { max-width: 16ch; }
+.closing .act { justify-content: center; }
+.closing .thanks { margin: 0 auto; }
+.closing .copy p.foot { margin: 2rem auto 0; font-size: 12px; line-height: 1.33; letter-spacing: 0; color: var(--quiet); max-width: 30rem; }
+
+.phone-stage { --phone-h: min(66vh, 600px); flex: none; margin-left: auto; margin-right: 8vw; }
+
+.rail { position: fixed; z-index: 3; right: clamp(10px, 2.4vw, 32px); top: 24vh; bottom: 24vh; width: 1px; background: rgba(255,255,255,0.14); }
+.rail i { position: absolute; left: 0; top: 0; width: 1px; height: calc(100% * var(--scroll, 0)); background: var(--gold); }
+
+/* With script: one block of copy on screen at a time. The sections become scroll distance; copy and phone are pinned and faded by the script. */
+.pin section { display: block; min-height: 150vh; min-height: 150svh; padding: 0; }
+.pin section.hero, .pin section.closing { min-height: 100vh; min-height: 100svh; }
+.pin .copy { position: fixed; left: var(--gutter); top: 50%; width: min(34rem, 100% - 2 * var(--gutter)); max-width: none; opacity: var(--o, 0); transform: translateY(calc(-50% + var(--y, 0px))); will-change: opacity, transform; }
+.pin .closing .copy { left: 50%; top: auto; bottom: 56px; width: min(36rem, 100% - 2 * var(--gutter)); transform: translate(-50%, var(--y, 0px)); }
+.pin .phone-stage { position: fixed; left: 78vw; top: 52%; margin: 0; opacity: var(--o, 0); transform: translate(-50%, calc(-50% + var(--y, 0px))) scale(var(--s, 1)); will-change: opacity, transform; }
+
+/* APP PREVIEW CSS START */
+/* Companion app preview. One root: <div class="app-preview" data-screen="1">.
+   Size: set --phone-h on the root or any ancestor (default 620px, legible down to 440px). Every inner size is in em of phone height / 62.
+   Screens: data-screen="1" Home, "2" Pods, "3" Your data. The change is a CSS transition; no script needed. */
+.app-preview {
+  --ap-gold: var(--gold, #c9a961);
+  --ap-gold-bright: var(--gold-bright, #e8cf96);
+  --ap-line: var(--line, rgba(201, 169, 97, 0.4));
+  --ap-soft: rgba(255, 255, 255, 0.72);
+  --ap-quiet: rgba(255, 255, 255, 0.5);
+  --ap-display: var(--display, "Bodoni Moda", Georgia, serif);
+  --ap-body: var(--body, "Instrument Sans", Arial, sans-serif);
+  --ap-ease: cubic-bezier(0.22, 0.61, 0.36, 1); /* ease-out */
+  position: relative; display: inline-block; flex: none; vertical-align: top;
+  height: var(--phone-h, 620px); aspect-ratio: 9 / 19;
+  font: 400 calc(var(--phone-h, 620px) / 62) / 1.3 var(--ap-body);
+  color: #fff; text-align: left; letter-spacing: 0; -webkit-font-smoothing: antialiased; user-select: none;
+}
+.app-preview *, .app-preview *::before, .app-preview *::after { box-sizing: border-box; }
+.app-preview svg { display: block; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+/* The handset: a plain black aluminium slab. The edge light is a gradient border, bright top left, warm bottom right. */
+.app-preview .ap-phone { position: absolute; inset: 0; border-radius: 4.7em; border: max(1px, 0.14em) solid transparent;
+  background:
+    linear-gradient(150deg, #242426 0%, #0d0d0e 16%, #040404 48%, #0a0a0a 84%, #1c1a16 100%) padding-box,
+    linear-gradient(150deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.38) 14%, rgba(255, 255, 255, 0.17) 42%, rgba(232, 207, 150, 0.22) 62%, rgba(232, 207, 150, 0.55) 88%, rgba(255, 244, 214, 0.8) 100%) border-box;
+  box-shadow: 0 0 1.4em rgba(255, 255, 255, 0.05), 0 0 5em rgba(232, 207, 150, 0.05), inset 0 0 0.5em rgba(255, 255, 255, 0.07); }
+.app-preview .ap-phone::before { content: ""; position: absolute; inset: 0.3em; border-radius: 4.3em; border: 1px solid rgba(255, 255, 255, 0.07); pointer-events: none; }
+.app-preview .ap-screen { position: absolute; inset: 0.85em; border-radius: 3.75em; background: #000; overflow: hidden; display: flex; flex-direction: column;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05); }
+.app-preview .ap-screen::after { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+  background: linear-gradient(128deg, rgba(255, 255, 255, 0.055) 0%, rgba(255, 255, 255, 0) 26%); }
+.app-preview .ap-cam { position: absolute; left: 50%; top: 1.5em; width: 1em; height: 1em; margin-left: -0.5em; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #2b2b2e 0%, #0b0b0c 55%, #000 100%); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1); }
+
+.app-preview .ap-status { flex: none; height: 4.6em; padding: 1.35em 2.7em 0; font-size: 1em; }
+.app-preview .ap-time { font-size: 1.2em; font-weight: 600; color: var(--ap-soft); font-variant-numeric: tabular-nums; }
+
+/* The three screens share one stage. Screens before the current one wait on the left, later ones on the right. */
+.app-preview .ap-views { position: relative; flex: 1; min-height: 0; }
+.app-preview .ap-view { position: absolute; inset: 0; padding: 1.6em 2.6em 0; display: flex; flex-direction: column;
+  opacity: 0; transform: translateX(2.6em); transition: opacity 0.6s var(--ap-ease), transform 0.6s var(--ap-ease); }
+.app-preview[data-screen="2"] .ap-v1, .app-preview[data-screen="3"] .ap-v1, .app-preview[data-screen="3"] .ap-v2 { transform: translateX(-2.6em); }
+.app-preview[data-screen="1"] .ap-v1, .app-preview[data-screen="2"] .ap-v2, .app-preview[data-screen="3"] .ap-v3 { opacity: 1; transform: none; }
+
+/* Shared type */
+.app-preview .ap-hello { font-size: 1.55em; color: var(--ap-soft); }
+.app-preview .ap-hello span { color: #fff; font-weight: 500; }
+.app-preview .ap-label { font-size: 1.2em; font-weight: 500; color: var(--ap-gold); }
+.app-preview .ap-fine { font-size: 1.2em; line-height: 1.35; color: var(--ap-soft); }
+.app-preview .ap-serif { font-family: var(--ap-display); font-weight: 400; font-optical-sizing: auto; letter-spacing: -0.01em; }
+.app-preview .ap-rule { height: 1px; background: var(--ap-line); flex: none; }
+
+/* 1 Home */
+.app-preview .ap-cup { margin-top: 3em; }
+.app-preview .ap-cup .ap-big { font-size: 8.2em; line-height: 0.96; margin: 0.06em 0 0 -0.03em; }
+.app-preview .ap-cup .ap-how { font-size: 2.5em; line-height: 1.15; color: var(--ap-gold-bright); margin-top: 0.1em; }
+.app-preview .ap-strength { margin-top: 3em; }
+.app-preview .ap-track { position: relative; height: 1.8em; margin: 0.9em 0.9em 0.3em; }
+.app-preview .ap-track::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: var(--ap-line); }
+.app-preview .ap-track::after { content: ""; position: absolute; left: 0; width: 25%; top: 50%; height: 1px; background: var(--ap-gold-bright); }
+.app-preview .ap-stop { position: absolute; top: 50%; width: 1px; height: 0.7em; margin-top: -0.35em; background: var(--ap-gold); opacity: 0.75; }
+.app-preview .ap-knob { position: absolute; left: 25%; top: 50%; width: 1.8em; height: 1.8em; margin: -0.9em 0 0 -0.9em; border-radius: 50%;
+  background: #000; border: 1px solid var(--ap-gold-bright); }
+.app-preview .ap-knob::after { content: ""; position: absolute; inset: 0.36em; border-radius: 50%; background: linear-gradient(180deg, var(--ap-gold-bright), var(--ap-gold)); }
+.app-preview .ap-ends { display: flex; justify-content: space-between; font-size: 1.2em; color: var(--ap-soft); }
+.app-preview .ap-strength .ap-fine { margin-top: 0.85em; }
+.app-preview .ap-people { margin-top: auto; padding-bottom: 0.7em; }
+.app-preview .ap-people .ap-label { margin-bottom: 0.55em; }
+.app-preview .ap-person { display: flex; justify-content: space-between; align-items: baseline; gap: 1em; padding: 0.82em 0; border-top: 1px solid var(--ap-line); }
+.app-preview .ap-person span:first-child { font-size: 1.5em; font-weight: 500; }
+.app-preview .ap-person span:last-child { font-size: 1.25em; color: var(--ap-soft); white-space: nowrap; }
+
+/* 2 Pods */
+.app-preview .ap-count { display: flex; align-items: baseline; gap: 1.1em; margin-top: 0.4em; }
+.app-preview .ap-count .ap-num { font-size: 12.5em; line-height: 0.86; margin-left: -0.03em; }
+.app-preview .ap-count .ap-unit { font-size: 2.5em; color: var(--ap-gold-bright); }
+.app-preview .ap-level { position: relative; height: 1.2em; margin-top: 2em; }
+.app-preview .ap-level::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: var(--ap-line); }
+.app-preview .ap-level .ap-fill { position: absolute; left: 0; top: 50%; width: 25%; height: 0.3em; margin-top: -0.15em; border-radius: 0.15em;
+  background: linear-gradient(90deg, var(--ap-gold), var(--ap-gold-bright)); }
+.app-preview .ap-level .ap-mark { position: absolute; left: 31.25%; top: 0; width: 1px; height: 100%; background: #fff; opacity: 0.8; }
+.app-preview .ap-v2 > .ap-fine { margin-top: 0.7em; }
+.app-preview .ap-ask { margin-top: auto; padding-bottom: 1.5em; }
+.app-preview .ap-ask .ap-q { font-size: 2.7em; line-height: 1.12; margin: 0.75em 0 0.7em; text-wrap: balance; }
+.app-preview .ap-btn { display: flex; align-items: center; justify-content: center; height: 3.25em; border-radius: 999px; font-size: 1.4em; font-weight: 500; color: #fff;
+  border: 1px solid var(--ap-line); white-space: nowrap; }
+.app-preview .ap-btn.ap-yes { height: 3.1em; font-size: 1.55em; font-weight: 600; color: #000; border: 0;
+  background: linear-gradient(180deg, var(--ap-gold-bright), var(--ap-gold)); box-shadow: 0 0 0 1px rgba(232, 207, 150, 0.55); }
+.app-preview .ap-two { display: flex; gap: 0.9em; margin-top: 0.9em; }
+.app-preview .ap-two .ap-btn { flex: 1; }
+.app-preview .ap-ask .ap-fine { margin-top: 1.05em; text-align: center; }
+
+/* 3 Your data */
+.app-preview .ap-title { font-size: 3.4em; line-height: 1.06; margin-top: 0.3em; white-space: nowrap; }
+.app-preview .ap-kept { margin-top: 1.9em; }
+.app-preview .ap-item { padding: 0.9em 0 0.95em; border-top: 1px solid var(--ap-line); }
+.app-preview .ap-item:last-child { border-bottom: 1px solid var(--ap-line); }
+.app-preview .ap-item span { display: block; }
+.app-preview .ap-item span:first-child { font-size: 1.5em; font-weight: 500; }
+.app-preview .ap-item span:last-child { font-size: 1.25em; color: var(--ap-soft); margin-top: 0.12em; }
+.app-preview .ap-pause { display: flex; align-items: center; justify-content: space-between; gap: 1.4em; margin-top: 1.9em; }
+.app-preview .ap-pause .ap-on { font-size: 1.5em; font-weight: 500; }
+.app-preview .ap-pause .ap-fine { margin-top: 0.15em; }
+.app-preview .ap-switch { position: relative; flex: none; width: 4.6em; height: 2.6em; border-radius: 1.3em; border: 1px solid var(--ap-gold-bright); background: rgba(201, 169, 97, 0.16); }
+.app-preview .ap-switch::after { content: ""; position: absolute; right: 0.3em; top: 50%; width: 1.8em; height: 1.8em; margin-top: -0.9em; border-radius: 50%;
+  background: linear-gradient(180deg, var(--ap-gold-bright), var(--ap-gold)); }
+.app-preview .ap-erase { margin-top: auto; padding-bottom: 1.5em; }
+.app-preview .ap-erase .ap-fine { margin-top: 0.9em; text-align: center; }
+
+/* Bottom navigation: three items, a gold hairline on top, a brighter stretch over the current one. */
+.app-preview .ap-nav { position: relative; flex: none; height: 7.2em; display: flex; border-top: 1px solid var(--ap-line); padding: 0 1.2em; }
+.app-preview .ap-tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.45em; padding-top: 1.15em; color: var(--ap-quiet); transition: color 0.6s var(--ap-ease); }
+.app-preview .ap-tab svg { width: 2.3em; height: 2.3em; }
+.app-preview .ap-tab span { font-size: 1.2em; font-weight: 500; }
+.app-preview[data-screen="1"] .ap-t1, .app-preview[data-screen="2"] .ap-t2, .app-preview[data-screen="3"] .ap-t3 { color: var(--ap-gold-bright); }
+.app-preview .ap-here { position: absolute; left: 1.2em; top: -1px; width: calc((100% - 2.4em) / 3); height: 1px; transition: transform 0.6s var(--ap-ease); }
+.app-preview .ap-here::after { content: ""; position: absolute; left: 22%; right: 22%; top: -0.5px; height: 2px; border-radius: 1px; background: var(--ap-gold-bright); }
+.app-preview[data-screen="2"] .ap-here { transform: translateX(100%); }
+.app-preview[data-screen="3"] .ap-here { transform: translateX(200%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .app-preview .ap-view, .app-preview .ap-tab, .app-preview .ap-here { transition: none; }
+}
+
+.app-preview .ap-btn.ap-yes { background: none; color: var(--white); border: 1px solid var(--ap-gold); box-shadow: none; }
+
+@keyframes arrive { from { opacity: 0; } }
+@keyframes fadeup { from { opacity: 0; transform: translateY(24px); } }
+@keyframes run { 0% { transform: translateX(-100%); } 60%, 100% { transform: translateX(100%); } }
+
+@media (max-width: 800px) {
+  .top { flex-direction: column; gap: 2px; padding-top: 12px; }
+  .top .note { text-align: left; font-size: 11px; }
+  section { flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 24px; padding: 96px var(--gutter) 44px; }
+  .copy::before { margin-bottom: 18px; }
+  h1, h2 { margin-bottom: 0.7rem; }
+  .copy p { margin-bottom: 1.2rem; }
+  .cue { display: none; }
+  .rail { top: 30vh; bottom: 48vh; }
+  .phone-stage { --phone-h: min(50vh, 480px); margin: 0 auto; }
+  .pin .scrim { display: block; }
+  .pin .copy { top: auto; bottom: 34px; width: calc(100% - 2 * var(--gutter)); transform: translateY(var(--y, 0px)); }
+  .pin .closing .copy { bottom: 30px; }
+  .pin .phone-stage { left: 50%; top: 37%; }
+  h2 { max-width: 14ch; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<canvas id="view" role="img" aria-label="A slim black aluminium coffee machine on a dark stone worktop in a kitchen at night. A small display floats beside its top right corner and an espresso cup stands under the spout."></canvas>
+<div class="scrim" aria-hidden="true"></div>
+
+<header class="top">
+  <div class="name">Home pod machine <span>concept</span></div>
+  <p class="note">Student concept for a course at ESCP Business School. Not a Lavazza product and not affiliated with Lavazza.</p>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="copy">
+      <h1>Home coffee that doesn&rsquo;t taste instant.</h1>
+      <p>One slim machine for everyone at home. Each of you gets the cup you like.</p>
+      <div class="act">
+        <button class="cta" type="button">Notify me</button>
+        <p class="aside">One tap. No sign-up.</p>
+        <p class="thanks" role="status"><strong>Thank you. Your tap is counted.</strong><span>This is a concept test, so there is no waiting list yet. We count taps and store nothing about you.</span></p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="copy">
+      <h2>Made the way each of you takes it.</h2>
+      <p>Mum likes it strong, you like it mild. Tap your name and your cup is poured. Nothing to measure.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="copy">
+      <h2>It tastes like coffee.</h2>
+      <p>A fresh espresso from a Lavazza pod. No spoon, no kettle, no instant aftertaste.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="copy">
+      <h2>Pods arrive when you say yes.</h2>
+      <p>When you are running low, the machine asks. Nothing is ordered until you agree.</p>
+    </div>
+  </section>
+
+  <section class="app">
+    <div class="copy">
+      <h2>And an app, if you want one.</h2>
+      <p>Change your cup, answer the pod question or delete what the machine remembers. Everything also works at the machine.</p>
+    </div>
+    <div class="phone-stage">
+<div class="app-preview" data-screen="1" role="img" aria-label="Three screens of the optional phone app: a home screen with Anna's cup, mild in a mug, and a strength control; a pods screen that shows about 8 pods left and asks before ordering 2 boxes; and a screen that lists what the machine remembers, with a switch to pause it and a button to delete everything.">
+  <div class="ap-phone" aria-hidden="true">
+    <div class="ap-screen">
+      <div class="ap-cam"></div>
+      <div class="ap-status"><span class="ap-time">7:42</span></div>
+
+      <div class="ap-views">
+
+        <!-- 1 Home -->
+        <div class="ap-view ap-v1">
+          <div class="ap-hello">Good morning, <span>Anna</span></div>
+          <div class="ap-cup">
+            <div class="ap-label">Your cup</div>
+            <div class="ap-big ap-serif">Mild</div>
+            <div class="ap-how ap-serif">in a mug</div>
+          </div>
+          <div class="ap-strength">
+            <div class="ap-label">Strength</div>
+            <div class="ap-track">
+              <span class="ap-stop" style="left:0"></span><span class="ap-stop" style="left:25%"></span><span class="ap-stop" style="left:50%"></span><span class="ap-stop" style="left:75%"></span><span class="ap-stop" style="left:100%"></span>
+              <span class="ap-knob"></span>
+            </div>
+            <div class="ap-ends"><span>Milder</span><span>Stronger</span></div>
+            <div class="ap-fine">You confirm each change. Undo anytime.</div>
+          </div>
+          <div class="ap-people">
+            <div class="ap-label">Also at home</div>
+            <div class="ap-person"><span>Mum</span><span>strong, small cup</span></div>
+            <div class="ap-person"><span>Dad</span><span>strong, small cup</span></div>
+            <div class="ap-person"><span>Guest</span><span>medium, cup</span></div>
+          </div>
+        </div>
+
+        <!-- 2 Pods -->
+        <div class="ap-view ap-v2">
+          <div class="ap-hello">About</div>
+          <div class="ap-count"><span class="ap-num ap-serif">8</span><span class="ap-unit ap-serif">pods left</span></div>
+          <div class="ap-level"><span class="ap-fill"></span><span class="ap-mark"></span></div>
+          <div class="ap-fine">You asked to be reminded at 10.</div>
+          <div class="ap-ask">
+            <div class="ap-rule"></div>
+            <div class="ap-q ap-serif">Order 2 boxes of your usual pods?</div>
+            <div class="ap-btn ap-yes">Yes</div>
+            <div class="ap-two"><div class="ap-btn">Change</div><div class="ap-btn">Not now</div></div>
+            <div class="ap-fine">Nothing is ordered without a yes.</div>
+          </div>
+        </div>
+
+        <!-- 3 Your data -->
+        <div class="ap-view ap-v3">
+          <div class="ap-hello">Your data</div>
+          <div class="ap-title ap-serif">The machine<br>remembers</div>
+          <div class="ap-kept">
+            <div class="ap-item"><span>Each person&rsquo;s cup</span><span>Anna, Mum, Dad, Guest</span></div>
+            <div class="ap-item"><span>Answers after a cup</span><span>Anna: just right, this morning</span></div>
+            <div class="ap-item"><span>Pods used</span><span>A count, so it can ask in time</span></div>
+          </div>
+          <div class="ap-pause">
+            <div><div class="ap-on">Remembering is on</div><div class="ap-fine">Switch off to pause.</div></div>
+            <span class="ap-switch"></span>
+          </div>
+          <div class="ap-erase">
+            <div class="ap-btn">Delete everything</div>
+            <div class="ap-fine">Removes all of the above.</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="ap-nav">
+        <span class="ap-here"></span>
+        <div class="ap-tab ap-t1"><svg viewBox="0 0 24 24"><path d="M5 8h11v4.5a5.5 5.5 0 0 1-11 0z"/><path d="M16 9.5h1.3a2.3 2.3 0 0 1 0 4.6H15.8"/><path d="M4.5 20.5h12"/></svg><span>Home</span></div>
+        <div class="ap-tab ap-t2"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="7.6" rx="8" ry="2.6"/><path d="M4 7.6l2.3 8.9c.4 1.4 2.7 2.4 5.7 2.4s5.3-1 5.7-2.4L20 7.6"/></svg><span>Pods</span></div>
+        <div class="ap-tab ap-t3"><svg viewBox="0 0 24 24"><path d="M9.5 7h10M9.5 12h10M9.5 17h10"/><path d="M4.6 7h.01M4.6 12h.01M4.6 17h.01" stroke-width="2.2"/></svg><span>Your data</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+    </div>
+  </section>
+
+  <section class="closing">
+    <div class="copy">
+      <h2>Would you want it in your kitchen?</h2>
+      <p>Tell us with one tap. That is all we ask.</p>
+      <div class="act">
+        <button class="cta" type="button">Notify me</button>
+        <p class="thanks" role="status"><strong>Thank you. Your tap is counted.</strong><span>This is a concept test, so there is no waiting list yet. We count taps and store nothing about you.</span></p>
+      </div>
+      <p class="foot">Student concept for a course at ESCP Business School, November 2026. Not a Lavazza product and not affiliated with Lavazza.</p>
+    </div>
+  </section>
+</main>
+
+<div class="cue" aria-hidden="true"><i></i>Scroll to see it work</div>
+<div class="rail" aria-hidden="true"><i></i></div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+
+
+/* ---------- Counting: one row per page view and per tap on the button, sent to the team's Google Form.
+   A row holds the event (view or tap) and the group from the link (#p1, #p2, #p3; otherwise none). Nothing about the visitor. ---------- */
+const COUNT_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSeOwYpo8mNUuV7g1eulR6b3GMRHXnu-Q5nURwDpQlGpMff7vg/formResponse';
+const linkGroup = (location.hash.match(/^#(p1|p2|p3|test)$/) || [0, 'none'])[1];
+const testRender = /^#at-/.test(location.hash);
+function count(event) {
+  if (testRender) return;
+  try { fetch(COUNT_URL, { method: 'POST', mode: 'no-cors', keepalive: true, body: new URLSearchParams({ 'entry.1904125127': event, 'entry.394037258': linkGroup }) }).catch(() => {}); } catch (e) {}
+}
+count('view');
+
+/* ---------- The one button ---------- */
+let counted = false;
+const tapped = () => {
+  document.documentElement.classList.add('tapped');
+  if (!counted) { counted = true; count('tap'); }
+  try { localStorage.setItem('podMachineTap', '1'); } catch (e) {}
+};
+for (const b of document.querySelectorAll('.cta')) b.addEventListener('click', tapped);
+try { if (localStorage.getItem('podMachineTap')) { counted = true; document.documentElement.classList.add('tapped'); } } catch (e) {}
+
+/* ---------- Scene (1 unit = 1 cm) ---------- */
+const W = 12, BASE_H = 1.2, TOP = 26, BACK = -14.9, FRONT = 14.1;
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const canvas = document.getElementById('view');
+let renderer;
+try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true }); }
+catch (e) { canvas.style.display = 'none'; throw e; }
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(28, 1, 1, 600);
+
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.VSMShadowMap;   // soft shadows from the one shadow light
+
+/* Light: a kitchen at night. A warm 3000 K strip under the wall cabinet washes the wall behind the machine; that wash, not coloured rim light,
+   is what lifts the black body off the background. The body itself is shaped by large soft panels in its environment, a neutral key from the
+   front, two faint warm-white rims and one pale top light from where the strip is, which casts the only shadow. All lamps are spots with a
+   soft cone and no distance falloff, so the light stays around the machine and the left of the frame falls to black. Nothing is animated. */
+const WARM = 0xffb46b, WARM_WHITE = 0xfff4e2;
+{ // What the aluminium mirrors: a dark room with a few large soft panels (only the machine uses it; wall and worktop ignore it)
+  const room = new THREE.Scene(), panel = (w, h, color, gain, pos) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide })); m.material.color.multiplyScalar(gain); m.position.set(...pos); m.lookAt(0, 12, 0); room.add(m);
+  };
+  room.add(new THREE.Mesh(new THREE.BoxGeometry(600, 600, 600), new THREE.MeshBasicMaterial({ color: 0x020202, side: THREE.BackSide })));
+  panel(300, 200, 0xffffff, 6.5, [-20, 170, 40]);         // ceiling softbox: the broad highlight on the rounded top edges
+  panel(520, 200, 0xffffff, 1.3, [0, 20, 220]);          // the dim room in front: lifts the flat faces just off black
+  panel(130, 170, WARM_WHITE, 16, [-200, 45, -45]);      // tall panels left and right: the light lines on the upright edges
+  panel(180, 170, WARM_WHITE, 12, [200, 45, 30]);
+  panel(220, 40, 0xffffff, 3, [0, 130, -160]);           // a low neutral sheen from above and behind, so steel stays steel
+  scene.environment = new THREE.PMREMGenerator(renderer).fromScene(room, 0.02, 1, 1000).texture;
+}
+const spot = (color, intensity, pos, at, angle, penumbra = 1) => {
+  const l = new THREE.SpotLight(color, intensity, 0, angle, penumbra, 0); l.position.set(...pos); l.target.position.set(...at); scene.add(l, l.target); return l;
+};
+const key = spot(0xffffff, 1.2, [26, 46, 62], [0, 11, 2], 0.42);
+const rimL = spot(WARM_WHITE, 1.2, [-40, 22, -40], [0, 14, 0], 0.36);
+const rimR = spot(WARM_WHITE, 0.4, [22, 16, -52], [0, 14, 0], 0.36);
+const back = spot(0xffe6c8, 2.4, [10, 37, -36], [2, 0, 14], 0.8, 1);     // top light from above and behind: the pool on the worktop and the one shadow (paler than the strip, so steel and aluminium do not turn copper)
+back.castShadow = true; back.shadow.mapSize.set(1024, 1024); back.shadow.camera.near = 8; back.shadow.camera.far = 240;
+back.shadow.bias = -0.0004; back.shadow.radius = 4; back.shadow.blurSamples = 12;
+const wash = spot(WARM, 3.5, [-7, 27, -24], [-7, 6, -54], 1.05);         // the strip's softer reach down the wall, aimed away from the machine
+const strip = new THREE.RectAreaLight(WARM, 24, 86, 1.4);                // the strip itself, 86 cm long; it hangs under the cabinet (kitchen block)
+
+
+/* ---------- Fine bead-blasted grain, made in the page ---------- */
+function grainTexture() {
+  const S = 256, c = document.createElement('canvas'); c.width = c.height = S;
+  const x = c.getContext('2d'), d = x.createImageData(S, S);
+  for (let i = 0; i < S * S; i++) { const v = 205 + Math.floor(Math.random() * 50); d.data.set([v, v, v, 255], i * 4); }
+  x.putImageData(d, 0, 0);
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(1.4, 1.4); return t;
+}
+const grain = grainTexture();
+
+/* ---------- Materials ---------- */
+const M = {
+  alu: new THREE.MeshPhysicalMaterial({ color: 0x18181a, metalness: 0.85, roughness: 0.46, roughnessMap: grain, bumpMap: grain, bumpScale: 0.02, clearcoat: 0.15, clearcoatRoughness: 0.5, envMapIntensity: 1.05 }),
+  aluSoft: new THREE.MeshPhysicalMaterial({ color: 0x121214, metalness: 0.8, roughness: 0.54, roughnessMap: grain, envMapIntensity: 1.0 }),
+  gold: new THREE.MeshStandardMaterial({ color: 0xcfae6a, metalness: 1, roughness: 0.24, envMapIntensity: 1.3 }),
+  steel: new THREE.MeshStandardMaterial({ color: 0xc9cdd1, metalness: 1, roughness: 0.32, envMapIntensity: 1.1 }),
+  darkSteel: new THREE.MeshStandardMaterial({ color: 0x5c6166, metalness: 1, roughness: 0.4, envMapIntensity: 1.0 }),
+  gloss: new THREE.MeshPhysicalMaterial({ color: 0x050507, metalness: 0, roughness: 0.07, clearcoat: 1, clearcoatRoughness: 0.04 }),
+  slot: new THREE.MeshStandardMaterial({ color: 0x050506, metalness: 0.2, roughness: 0.85 }),
+  tank: new THREE.MeshPhysicalMaterial({ color: 0x5a6470, metalness: 0, roughness: 0.04, transparent: true, opacity: 0.34, depthWrite: false, envMapIntensity: 1.8, side: THREE.DoubleSide }),
+  water: new THREE.MeshPhysicalMaterial({ color: 0x9fd0f2, metalness: 0, roughness: 0.02, transparent: true, opacity: 0.4, depthWrite: false, envMapIntensity: 1.2 }),
+  mark: new THREE.MeshBasicMaterial({ color: 0xe9eef5 }),
+  ceramic: new THREE.MeshPhysicalMaterial({ color: 0xf1ede4, metalness: 0, roughness: 0.34, clearcoat: 0.7, clearcoatRoughness: 0.15, side: THREE.DoubleSide }),
+  coffee: new THREE.MeshStandardMaterial({ color: 0x3a1e0c, roughness: 0.2, metalness: 0 }),
+  pod: new THREE.MeshStandardMaterial({ color: 0x1b3f8f, metalness: 0.5, roughness: 0.4 })
+};
+
+/* ---------- Shape helpers ---------- */
+function insetPoly(pts, d) {            // counter-clockwise polygon, move every edge inward by d
+  const n = pts.length, out = [];
+  for (let i = 0; i < n; i++) {
+    const a = pts[(i - 1 + n) % n], p = pts[i], b = pts[(i + 1) % n];
+    const e1 = new THREE.Vector2(p[0] - a[0], p[1] - a[1]).normalize();
+    const e2 = new THREE.Vector2(b[0] - p[0], b[1] - p[1]).normalize();
+    const n1 = new THREE.Vector2(-e1.y, e1.x), n2 = new THREE.Vector2(-e2.y, e2.x);
+    const m = n1.clone().add(n2).normalize();
+    const k = d / Math.max(m.dot(n1), 0.2);
+    out.push([p[0] + m.x * k, p[1] + m.y * k]);
+  }
+  return out;
+}
+function roundedPoly(pts, radii) {
+  const s = new THREE.Shape(), n = pts.length;
+  for (let i = 0; i < n; i++) {
+    const p = pts[i], a = pts[(i - 1 + n) % n], b = pts[(i + 1) % n], r = radii[i];
+    const va = new THREE.Vector2(a[0] - p[0], a[1] - p[1]).normalize();
+    const vb = new THREE.Vector2(b[0] - p[0], b[1] - p[1]).normalize();
+    const p1 = [p[0] + va.x * r, p[1] + va.y * r], p2 = [p[0] + vb.x * r, p[1] + vb.y * r];
+    if (i === 0) s.moveTo(p1[0], p1[1]); else s.lineTo(p1[0], p1[1]);
+    s.quadraticCurveTo(p[0], p[1], p2[0], p2[1]);
+  }
+  s.closePath(); return s;
+}
+function rrShape(w, d, r) {
+  const hw = w / 2, hd = d / 2;
+  return roundedPoly([[-hw, -hd], [hw, -hd], [hw, hd], [-hw, hd]], [r, r, r, r]);
+}
+function slab(w, h, t, r, b = 0.15) {      // flat panel facing +z, centred, with softened edges
+  b = Math.min(b, t / 2 - 0.005);
+  const g = new THREE.ExtrudeGeometry(rrShape(w - 2 * b, h - 2 * b, Math.max(r - b, 0.05)),
+    { depth: t - 2 * b, bevelEnabled: true, bevelThickness: b, bevelSize: b, bevelSegments: 4, curveSegments: 16 });
+  g.translate(0, 0, -(t - 2 * b) / 2); return g;
+}
+function rrPrism(w, d, h, r, b = 0.25) {   // upright block with rounded plan corners; sits on y = 0
+  const g = slab(w, d, h, r, b); g.translate(0, 0, h / 2); g.rotateX(-Math.PI / 2); return g;
+}
+function mesh(geo, mat, x = 0, y = 0, z = 0, opts = {}) {
+  const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z);
+  m.castShadow = opts.cast !== false; m.receiveShadow = opts.receive !== false; return m;
+}
+const rbox = (w, h, d, r) => new RoundedBoxGeometry(w, h, d, 3, r);
+
+const machine = new THREE.Group(); scene.add(machine);
+
+/* ---------- Body: one anodised aluminium shell with soft, continuous edges; side profile in (z, y) ---------- */
+const HEAD_Z = 13, HEAD_Y = 17.5, COL_Z = 3;
+const profile = [[-8.5, BASE_H], [COL_Z, BASE_H], [COL_Z, HEAD_Y], [HEAD_Z, HEAD_Y], [HEAD_Z, TOP], [-8.5, TOP]];
+const cornerR = [0.5, 0.3, 0.5, 1.8, 2.8, 2.8];
+const concave = [false, false, true, false, false, false];
+const BEV = 1.0;
+{
+  const inner = insetPoly(profile, BEV);
+  const radii = cornerR.map((r, i) => concave[i] ? r + BEV : Math.max(r - BEV, 0.08));
+  const g = new THREE.ExtrudeGeometry(roundedPoly(inner, radii),
+    { depth: W - 2 * BEV, bevelEnabled: true, bevelThickness: BEV, bevelSize: BEV, bevelSegments: 10, curveSegments: 24 });
+  g.translate(0, 0, -(W - 2 * BEV) / 2); g.rotateY(-Math.PI / 2);
+  machine.add(mesh(g, M.alu));
+}
+
+/* ---------- Base and the one gold line under the column ---------- */
+machine.add(mesh(rrPrism(W, FRONT - BACK, BASE_H, 2.4, 0.35), M.aluSoft, 0, 0, (FRONT + BACK) / 2));
+machine.add(mesh(rrPrism(W + 0.06, 11.56, 0.14, 1.03, 0.04), M.gold, 0, BASE_H - 0.02, -2.75));
+
+/* ---------- Drip tray ---------- */
+const TRAY_Z = 8.4, TRAY_TOP = BASE_H + 1.75, REST_Y = TRAY_TOP + 0.14;
+machine.add(mesh(rrPrism(10.4, 10.4, 1.75, 1.8, 0.3), M.aluSoft, 0, BASE_H, TRAY_Z));
+machine.add(mesh(rrPrism(9.2, 9.2, 0.14, 1.3, 0.05), M.darkSteel, 0, TRAY_TOP - 0.02, TRAY_Z));
+for (let i = 0; i < 7; i++) machine.add(mesh(rbox(7, 0.06, 0.45, 0.02), M.slot, 0, TRAY_TOP + 0.13, TRAY_Z - 3.3 + i * 1.1, { cast: false }));
+
+/* ---------- Used-pod drawer: flush face with a finger recess ---------- */
+machine.add(mesh(new THREE.BoxGeometry(9.1, 5.3, 0.02), M.slot, 0, 6.1, COL_Z + 0.012, { cast: false }));     // dark gap around the face
+const drawer = new THREE.Group(); machine.add(drawer);
+drawer.add(mesh(rbox(8.8, 5.0, 0.14, 0.06), M.alu, 0, 6.1, COL_Z + 0.09));
+drawer.add(mesh(rbox(4.6, 0.55, 0.03, 0.01), M.slot, 0, 8.05, COL_Z + 0.165, { cast: false }));                // finger recess
+const ledOn = new THREE.MeshBasicMaterial({ color: 0xffe2a6 }), ledOff = new THREE.MeshBasicMaterial({ color: 0x2a2620 });
+const leds = [];
+for (let i = 0; i < 4; i++) { const l = mesh(new THREE.BoxGeometry(0.42, 0.12, 0.02), i < 2 ? ledOn : ledOff, 2.2 + i * 0.56, 4.15, COL_Z + 0.17, { cast: false, receive: false }); leds.push(l); drawer.add(l); }
+drawer.add(mesh(new THREE.BoxGeometry(8.4, 0.2, 8.4), M.slot, 0, 3.85, -1.3));                                  // the container behind the face
+for (const s of [-4.1, 4.1]) drawer.add(mesh(new THREE.BoxGeometry(0.2, 4.4, 8.4), M.slot, s, 6.0, -1.3));
+drawer.add(mesh(new THREE.BoxGeometry(8.4, 4.4, 0.2), M.slot, 0, 6.0, -5.5));
+[[-2.0, 5.0, 0.2, 0.3], [1.9, 5.0, -0.6, -0.5], [-0.4, 5.3, -3.1, 0.9], [1.6, 5.2, -3.6, 1.4]].forEach(([x, y, z, r]) => {
+  const p = mesh(new THREE.CylinderGeometry(1.85, 1.45, 2.6, 28), M.pod, x, y, z, { cast: false }); p.rotation.set(r, r * 0.7, 1.2 + r); drawer.add(p);
+});
+
+/* ---------- Fold-down shelf for a small cup: down for espresso, folded up for a mug ---------- */
+const SHELF_Y = 9.0, SHELF_LEN = 8.0, SHELF_TOP = SHELF_Y + 0.3;
+const shelf = new THREE.Group(); shelf.position.set(0, SHELF_Y, COL_Z + 0.25); machine.add(shelf);
+shelf.add(mesh(rbox(9.0, 0.45, SHELF_LEN, 0.2), M.alu, 0, 0, SHELF_LEN / 2));
+shelf.add(mesh(rbox(7.6, 0.06, 6.4, 0.02), M.darkSteel, 0, 0.24, SHELF_LEN / 2 + 0.2, { cast: false }));
+for (let i = 0; i < 5; i++) shelf.add(mesh(rbox(5.8, 0.04, 0.4, 0.015), M.slot, 0, 0.275, 2.0 + i * 1.1, { cast: false }));
+let shelfA = 0, shelfGoal = 0;                 // 0 = down, 1 = folded up against the column
+function placeShelf() { shelf.rotation.x = -Math.PI / 2 * shelfA * shelfA * (3 - 2 * shelfA); }
+
+/* ---------- Spout ---------- */
+const SPOUT_Z = 8.0, SPOUT_TIP = 16.1;
+machine.add(mesh(new THREE.CylinderGeometry(2.0, 2.0, 0.5, 48), M.aluSoft, 0, 17.25, SPOUT_Z));
+{ const t = mesh(new THREE.TorusGeometry(2.0, 0.09, 16, 72), M.gold, 0, 17.0, SPOUT_Z); t.rotation.x = Math.PI / 2; machine.add(t); }
+machine.add(mesh(new THREE.CylinderGeometry(0.72, 0.6, 0.9, 32), M.steel, 0, 16.55, SPOUT_Z));
+
+/* ---------- Pod slot and lever on top, all in the body's black ---------- */
+const SLOT_Z = 0.8;
+machine.add(mesh(rbox(4.8, 0.1, 3.1, 0.04), M.gloss, 0, TOP + 0.03, SLOT_Z, { cast: false }));
+for (const s of [-3.4, 3.4]) machine.add(mesh(rbox(0.42, 0.36, 9.6, 0.14), M.aluSoft, s, TOP + 0.26, -0.2));
+machine.add(mesh(rbox(7.22, 0.44, 0.7, 0.18), M.aluSoft, 0, TOP + 0.3, 4.6));
+
+/* ---------- Power and stop button, flush on top ---------- */
+const button = mesh(new THREE.CylinderGeometry(0.8, 0.8, 0.16, 48), M.steel, 0, TOP + 0.04, 8.0); machine.add(button);
+{
+  const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d');
+  x.strokeStyle = '#2b2d30'; x.lineWidth = 9; x.lineCap = 'round';
+  x.beginPath(); x.arc(64, 68, 30, -Math.PI * 0.32, Math.PI * 1.32); x.stroke();
+  x.beginPath(); x.moveTo(64, 28); x.lineTo(64, 64); x.stroke();
+  const icon = new THREE.Mesh(new THREE.CircleGeometry(0.62, 32), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false }));
+  icon.rotation.x = -Math.PI / 2; icon.position.set(0, TOP + 0.13, 8.0); machine.add(icon);
+}
+
+/* ---------- Display: its own slim panel, floating beside the top right corner on a short arm ---------- */
+const SCR_W = 4.4, SCR_H = 7.2;                                    // portrait, 16 px per mm
+const scrCanvas = document.createElement('canvas'); scrCanvas.width = 704; scrCanvas.height = 1152;
+const scrTex = new THREE.CanvasTexture(scrCanvas); scrTex.colorSpace = THREE.SRGBColorSpace; scrTex.anisotropy = 8;
+const disp = new THREE.Group(); disp.position.set(8.3, 21.9, HEAD_Z + 1.4); disp.rotation.set(-0.21, -0.17, 0, 'YXZ'); machine.add(disp);
+disp.add(mesh(slab(5.0, 7.8, 0.7, 1.05, 0.2), M.alu));
+{ const glass = mesh(new THREE.ShapeGeometry(rrShape(4.84, 7.64, 0.95), 14), M.gloss, 0, 0, 0.352, { cast: false }); disp.add(glass); }
+const screen = new THREE.Mesh(new THREE.ShapeGeometry(rrShape(SCR_W, SCR_H, 0.74), 14), new THREE.MeshBasicMaterial({ map: scrTex, toneMapped: false }));
+{ const uv = screen.geometry.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) / SCR_W + 0.5, uv.getY(i) / SCR_H + 0.5); }
+screen.position.z = 0.358; disp.add(screen);
+{ // the arm: a steel stub out of the head's side, a short neck to the panel's back, one gold ring
+  const neck = mesh(new THREE.CylinderGeometry(0.8, 0.8, 2.0, 40), M.aluSoft, 0, 0, -1.3); neck.rotation.x = Math.PI / 2; disp.add(neck);
+  const ring = mesh(new THREE.TorusGeometry(0.84, 0.07, 14, 64), M.gold, 0, 0, -0.37); disp.add(ring);
+  const arm = mesh(new THREE.CylinderGeometry(0.5, 0.5, 3.6, 32), M.steel, -1.8, 0, -1.9); arm.rotation.z = Math.PI / 2; disp.add(arm);
+}
+
+/* ---------- The name on the head's front face: plain letters, not the company's logo ---------- */
+const markCanvas = document.createElement('canvas'); markCanvas.width = 1024; markCanvas.height = 128;
+const markTex = new THREE.CanvasTexture(markCanvas); markTex.anisotropy = 8;
+function drawMark() {
+  const x = markCanvas.getContext('2d'); x.fillStyle = '#000'; x.fillRect(0, 0, 1024, 128);
+  x.fillStyle = '#fff'; x.textBaseline = 'middle'; x.textAlign = 'left';
+  x.font = '500 76px "Inter", Arial, "Liberation Sans", sans-serif';
+  const word = 'LAVAZZA', gap = 34; let wsum = -gap; for (const ch of word) wsum += x.measureText(ch).width + gap;
+  let cx = 512 - wsum / 2; for (const ch of word) { x.fillText(ch, cx, 68); cx += x.measureText(ch).width + gap; }
+  markTex.needsUpdate = true;
+}
+{
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(5.0, 0.62), new THREE.MeshStandardMaterial({ color: 0xcfae6a, emissive: 0x8a6f38, emissiveIntensity: 0.9, metalness: 1, roughness: 0.3, alphaMap: markTex, transparent: true, depthWrite: false }));
+  m.position.set(-1.6, 20.2, HEAD_Z + 0.02); machine.add(m);
+}
+
+/* ---------- Water tank: docked behind the body, filled in place through a flap ---------- */
+const TANK_W = 9.8, TANK_D = 5.5, TANK_Z = -8.6 - TANK_D / 2, TANK_H = 20.3;
+machine.add(mesh(rrPrism(TANK_W + 0.6, 5.9, 1.5, 2.3, 0.25), M.aluSoft, 0, BASE_H, TANK_Z - 0.1));                // locating lip
+machine.add(mesh(rrPrism(TANK_W, TANK_D, TANK_H, 2.2, 0.3), M.tank, 0, BASE_H, TANK_Z, { cast: false, receive: false }));
+machine.add(mesh(rrPrism(TANK_W - 0.5, TANK_D - 0.5, 13, 1.95, 0.2), M.water, 0, BASE_H + 0.4, TANK_Z, { cast: false, receive: false }));
+machine.add(mesh(rrPrism(TANK_W + 0.06, TANK_D + 0.06, 0.1, 2.23, 0.02), M.mark, 0, BASE_H + 17.6, TANK_Z, { cast: false, receive: false }));   // MAX line
+const LID_Y = BASE_H + TANK_H;
+machine.add(mesh(rrPrism(TANK_W + 0.3, TANK_D + 0.3, 0.9, 2.3, 0.3), M.alu, 0, LID_Y, TANK_Z));
+machine.add(mesh(rbox(5.0, 0.08, 2.2, 0.03), M.gloss, 0, LID_Y + 0.93, TANK_Z + 1.3, { cast: false }));            // fill flap, next to the body
+machine.add(mesh(rbox(1.4, 0.16, 0.4, 0.06), M.steel, 0, LID_Y + 1.0, TANK_Z + 0.35, { cast: false }));
+machine.add(mesh(rbox(6.4, 0.32, 0.45, 0.12), M.steel, 0, LID_Y + 1.06, TANK_Z - 2.0));                            // fold-up handle
+for (const s of [-3.0, 3.0]) machine.add(mesh(rbox(0.4, 0.3, 1.5, 0.1), M.steel, s, LID_Y + 1.05, TANK_Z - 1.3));
+
+/* ---------- Espresso cup and mug ---------- */
+const VESSELS = {
+  cup: { base: SHELF_TOP, r: y => 1.7 + 0.193 * (y - 0.6) - 0.03, floor: 0.6, group: new THREE.Group() },
+  mug: { base: REST_Y, r: y => 3.25 + 0.058 * (y - 0.9) - 0.03, floor: 0.9, group: new THREE.Group() }
+};
+{
+  const lathe = pts => new THREE.LatheGeometry(pts.map(p => new THREE.Vector2(p[0], p[1])), 72);
+  const c = VESSELS.cup.group;
+  c.add(mesh(lathe([[0, 0], [1.6, 0], [2.0, 0.2], [2.8, 4.8], [2.8, 5.0], [2.55, 5.0], [1.7, 0.6], [0, 0.6]]), M.ceramic));
+  const h2 = mesh(new THREE.TorusGeometry(1.1, 0.27, 14, 32, Math.PI), M.ceramic, 2.45, 2.8, 0); h2.rotation.z = -Math.PI / 2; c.add(h2);
+  const g = VESSELS.mug.group;
+  g.add(mesh(lathe([[0, 0], [3.1, 0], [3.5, 0.25], [4.05, 9.2], [4.05, 9.5], [3.75, 9.5], [3.25, 0.9], [0, 0.9]]), M.ceramic));
+  const h = mesh(new THREE.TorusGeometry(2.2, 0.45, 16, 40, Math.PI), M.ceramic, 3.9, 5.0, 0); h.rotation.z = -Math.PI / 2; g.add(h);
+}
+const coffee = mesh(new THREE.CylinderGeometry(1, 1, 0.1, 64), M.coffee, 0, 0, 0, { cast: false }); coffee.visible = false;
+const waterStream = new THREE.MeshStandardMaterial({ color: 0xcfe4f2, roughness: 0.1, transparent: true, opacity: 0.75 });
+const stream = mesh(new THREE.CylinderGeometry(0.13, 0.11, 1, 12), M.coffee, 0, 0, SPOUT_Z, { cast: false, receive: false }); stream.visible = false; machine.add(stream);
+for (const k in VESSELS) { const g = VESSELS[k].group; g.position.set(0, VESSELS[k].base, SPOUT_Z); g.visible = false; machine.add(g); }
+let vessel = 'cup', vesselOn = true, podsMode = false;
+function setLevel(y) {
+  const v = VESSELS[vessel]; coffee.visible = y > v.floor;
+  coffee.position.y = y; const r = v.r(Math.max(y, v.floor)); coffee.scale.set(r, 1, r);
+}
+function showVessel(kind, on = vesselOn, instant = false) {
+  vessel = kind; vesselOn = on; shelfGoal = kind === 'cup' ? 0 : 1;
+  if (instant || reduceMotion) { shelfA = shelfGoal; placeShelf(); }
+  VESSELS[kind].group.add(coffee);
+}
+function vesselVisibility() {   // a cup needs the shelf down, a mug needs it folded away
+  VESSELS.cup.group.visible = vesselOn && !podsMode && vessel === 'cup' && shelfA < 0.02;
+  VESSELS.mug.group.visible = vesselOn && !podsMode && vessel === 'mug' && shelfA > 0.98;
+}
+
+
+
+drawMark();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { drawMark(); drawn = ''; });
+
+for (const m of [M.alu, M.aluSoft]) m.envMapIntensity = 0.7;
+
+/* ===== KITCHEN SCENE START ===== */
+/* A dark kitchen at night, made from planes and canvas textures only: a polished black marble worktop with a dim mirror image,
+   a fluted dark oak wall 39 cm behind the machine, and the underside of a wall cabinet with one warm LED line.
+   Nothing here is lit except around the machine, so the planes run out of the frame in the dark and no edge is ever seen. */
+import { Reflector } from 'three/addons/objects/Reflector.js';
+import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUniformsLib.js';
+const kitchen = (() => {
+  RectAreaLightUniformsLib.init();
+  const WALL_Z = BACK - 39, WALL_H = 150, SPAN = 2400, FRONT_Z = 460;      // wall plane, and how far the planes run
+  const CAB_Y = 29.6, CAB_D = 30, CAB_LIFT = 5.4, CAB_LIFT_TALL = 16;       // cabinet underside; it sits higher once the hero is left (see update)
+  const LED_X0 = -50, LED_X1 = 36, LED_Z = WALL_Z + 5;                    // the lit length of the strip
+  const aniso = renderer.capabilities.getMaxAnisotropy();
+  let seed = 11;
+  const rand = () => { seed = seed + 0x6D2B79F5 | 0; let v = Math.imul(seed ^ seed >>> 15, 1 | seed); v = v + Math.imul(v ^ v >>> 7, 61 | v) ^ v; return ((v ^ v >>> 14) >>> 0) / 4294967296; };
+  const sheet = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return [c, c.getContext('2d')]; };
+  const tex = (c, rx = 1, ry = 1, srgb = false) => { const m = new THREE.CanvasTexture(c); m.wrapS = m.wrapT = THREE.RepeatWrapping; m.repeat.set(rx, ry); m.anisotropy = aniso; if (srgb) m.colorSpace = THREE.SRGBColorSpace; return m; };
+
+  /* Black marble: soft clouding and a few faint white and gold veins; the tile repeats without a seam */
+  function marble() {
+    const S = 1024, [c, x] = sheet(S, S);
+    x.fillStyle = '#2a2a2d'; x.fillRect(0, 0, S, S);
+    const wrap = draw => { for (const ox of [-S, 0, S]) for (const oy of [-S, 0, S]) { x.save(); x.translate(ox, oy); draw(); x.restore(); } };
+    for (let i = 0; i < 70; i++) {
+      const px = rand() * S, py = rand() * S, r = 60 + rand() * 220, a = 0.02 + rand() * 0.035, dark = rand() < 0.5;
+      wrap(() => { const g = x.createRadialGradient(px, py, 0, px, py, r); g.addColorStop(0, dark ? `rgba(0,0,0,${a * 4})` : `rgba(214,208,198,${a})`); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(px - r, py - r, 2 * r, 2 * r); });
+    }
+    x.lineCap = x.lineJoin = 'round';
+    for (let v = 0; v < 20; v++) {
+      let px = rand() * S, py = rand() * S, a = 0.55 + (rand() - 0.5) * 0.9; const pts = [[px, py]], n = 30 + rand() * 90;
+      for (let i = 0; i < n; i++) { a += (rand() - 0.5) * 0.55; px += Math.cos(a) * 12; py += Math.sin(a) * 12; pts.push([px, py]); }
+      const col = rand() < 0.3 ? '206,172,104' : '226,224,218', alpha = 0.04 + rand() * 0.1, wdt = 0.5 + rand() * rand() * 2.4;
+      wrap(() => { x.beginPath(); pts.forEach((q, i) => i ? x.lineTo(q[0], q[1]) : x.moveTo(q[0], q[1])); x.strokeStyle = x.shadowColor = `rgba(${col},${alpha})`; x.shadowBlur = 5; x.lineWidth = wdt; x.stroke(); });
+    }
+    return tex(c, SPAN / 160, (FRONT_Z - WALL_Z) / 160, true);
+  }
+
+  /* Fluted dark oak: eight ribs per tile with grain along them and shadow in the grooves, plus a normal map of the rib profile */
+  function fluted() {
+    const N = 8, FW = 64, S = N * FW, [c, x] = sheet(S, S), [n, y] = sheet(S, 4);
+    for (let i = 0; i < N; i++) {
+      const tone = 0.96 + rand() * 0.08, x0 = i * FW;
+      x.fillStyle = `rgb(${50 * tone | 0},${57 * tone | 0},${58 * tone | 0})`; x.fillRect(x0, 0, FW, S);
+      for (let k = 0; k < 46; k++) {
+        const gx = x0 + 3 + rand() * (FW - 6), y0 = rand() * S, len = 80 + rand() * 380, wdt = 0.6 + rand() * 1.2;
+        x.fillStyle = rand() < 0.55 ? `rgba(0,0,0,${0.05 + rand() * 0.12})` : `rgba(150,128,100,${0.03 + rand() * 0.06})`;
+        x.fillRect(gx, y0, wdt, len); x.fillRect(gx, y0 - S, wdt, len);
+      }
+      const g = x.createLinearGradient(x0, 0, x0 + FW, 0); g.addColorStop(0, 'rgba(0,0,0,0.95)'); g.addColorStop(0.035, 'rgba(0,0,0,0.8)'); g.addColorStop(0.1, 'rgba(0,0,0,0)'); g.addColorStop(0.9, 'rgba(0,0,0,0)'); g.addColorStop(0.965, 'rgba(0,0,0,0.8)'); g.addColorStop(1, 'rgba(0,0,0,0.95)');
+      x.fillStyle = g; x.fillRect(x0, 0, FW, S);
+    }
+    const d = y.createImageData(S, 4);
+    for (let py = 0; py < 4; py++) for (let px = 0; px < S; px++) {
+      const u = ((px % FW) + 0.5) / FW * 2 - 1, nx = Math.sign(u) * Math.pow(Math.abs(u), 2.4) * 0.6, nz = Math.sqrt(1 - nx * nx);
+      d.data.set([nx * 127.5 + 127.5, 127.5, nz * 127.5 + 127.5, 255], (py * S + px) * 4);
+    }
+    y.putImageData(d, 0, 0);
+    const rx = SPAN / (N * 3.2), ry = WALL_H / 110;
+    return { map: tex(c, rx, ry, true), normalMap: tex(n, rx, 1) };
+  }
+
+  /* Wall: the wash ends softly left and right of the machine, so the copy sits on black */
+  const wallMat = new THREE.MeshStandardMaterial({ ...fluted(), roughness: 0.62, metalness: 0, envMapIntensity: 0 });
+  wallMat.onBeforeCompile = s => {
+    s.vertexShader = s.vertexShader.replace('#include <common>', '#include <common>\nvarying float vKX;').replace('#include <project_vertex>', '#include <project_vertex>\nvKX = (modelMatrix * vec4(transformed, 1.0)).x;');
+    s.fragmentShader = s.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vKX;')
+      .replace('#include <dithering_fragment>', '#include <dithering_fragment>\ngl_FragColor.rgb *= smoothstep(-72.0, -36.0, vKX) * (1.0 - smoothstep(46.0, 88.0, vKX));');
+  };
+  const wall = new THREE.Mesh(new THREE.PlaneGeometry(SPAN, WALL_H), wallMat);
+  wall.position.set(0, WALL_H / 2, WALL_Z); scene.add(wall);
+
+  /* Worktop, with the mirror image of the scene added on top of the stone: dim, slightly blurred, stronger at flat angles */
+  const mirror = new Reflector(new THREE.PlaneGeometry(1, 1), { textureWidth: 512, textureHeight: 512, multisample: 4 });
+  mirror.rotation.x = -Math.PI / 2; mirror.position.y = 0.02; mirror.updateMatrixWorld();      // never added to the scene; rendered by hand in update()
+  const mirrorRT = mirror.getRenderTarget(); mirrorRT.texture.generateMipmaps = true; mirrorRT.texture.minFilter = THREE.LinearMipmapLinearFilter;
+  const mirrorInv = mirror.matrixWorld.clone().invert(), mirrorMat = new THREE.Matrix4(), mirrorPx = new THREE.Vector2(1 / 512, 1 / 512);
+  const stone = new THREE.MeshPhysicalMaterial({ map: marble(), roughness: 0.3, metalness: 0, envMapIntensity: 0, specularIntensity: 0 });   // highlights come from the mirror image only
+  stone.onBeforeCompile = s => {
+    Object.assign(s.uniforms, { kMirrorMap: { value: mirrorRT.texture }, kMirrorMat: { value: mirrorMat }, kMirrorPx: { value: mirrorPx }, kMirrorGain: { value: 0.6 } });
+    s.vertexShader = s.vertexShader.replace('#include <common>', '#include <common>\nuniform mat4 kMirrorMat; varying vec4 vKMirror; varying vec3 vKWorld;')
+      .replace('#include <project_vertex>', '#include <project_vertex>\n{ vec4 kW = modelMatrix * vec4(transformed, 1.0); vKWorld = kW.xyz; vKMirror = kMirrorMat * kW; }');
+    s.fragmentShader = s.fragmentShader.replace('#include <common>', '#include <common>\nuniform sampler2D kMirrorMap; uniform vec2 kMirrorPx; uniform float kMirrorGain; varying vec4 vKMirror; varying vec3 vKWorld;')
+      .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+      { vec2 kUv = vKMirror.xy / vKMirror.w; vec2 kD = kMirrorPx * 3.5;
+        vec3 kC = texture2D(kMirrorMap, kUv, 1.4).rgb * 0.28
+          + (texture2D(kMirrorMap, kUv + kD * vec2(1.0, 0.4), 2.2).rgb + texture2D(kMirrorMap, kUv + kD * vec2(-0.4, 1.0), 2.2).rgb
+           + texture2D(kMirrorMap, kUv + kD * vec2(-1.0, -0.4), 2.2).rgb + texture2D(kMirrorMap, kUv + kD * vec2(0.4, -1.0), 2.2).rgb) * 0.18;
+        kC /= 1.0 + 2.5 * max(kC.r, max(kC.g, kC.b));      // bright things (the LED line) mirror dimly
+        float kF = 0.045 + 0.955 * pow(1.0 - clamp(normalize(cameraPosition - vKWorld).y, 0.0, 1.0), 5.0);
+        totalEmissiveRadiance += kC * kF * kMirrorGain; }`);
+  };
+  const top = new THREE.Mesh(new THREE.PlaneGeometry(SPAN, FRONT_Z - WALL_Z), stone);
+  top.rotation.x = -Math.PI / 2; top.position.set(0, 0, (FRONT_Z + WALL_Z) / 2); top.receiveShadow = true; scene.add(top);
+  const sizeMirror = () => {
+    const k = Math.min(0.5 * renderer.getPixelRatio(), 1280 / Math.max(innerWidth, innerHeight)), w = Math.max(2, Math.round(innerWidth * k)), h = Math.max(2, Math.round(innerHeight * k));
+    mirrorRT.setSize(w, h); mirrorPx.set(1 / w, 1 / h);
+  };
+  addEventListener('resize', sizeMirror); sizeMirror();
+
+  /* Wall cabinet: a matt black block whose underside carries the LED line; the strip light hangs with it */
+  const cab = new THREE.Group(); scene.add(cab);
+  const block = new THREE.Mesh(new THREE.BoxGeometry(SPAN, 80, CAB_D), new THREE.MeshStandardMaterial({ color: 0x0c0c0d, roughness: 0.7, metalness: 0, envMapIntensity: 0 }));
+  block.position.set(0, CAB_Y + 40, WALL_Z + CAB_D / 2); cab.add(block);
+  const LEN = LED_X1 - LED_X0, MID = (LED_X0 + LED_X1) / 2;
+  const ends = (() => { const [c, x] = sheet(256, 4), g = x.createLinearGradient(0, 0, 256, 0); g.addColorStop(0, '#000'); g.addColorStop(0.1, '#fff'); g.addColorStop(0.9, '#fff'); g.addColorStop(1, '#000'); x.fillStyle = g; x.fillRect(0, 0, 256, 4); return new THREE.CanvasTexture(c); })();
+  const led = new THREE.Mesh(new THREE.BoxGeometry(LEN, 0.3, 0.5), new THREE.MeshBasicMaterial({ map: ends, color: new THREE.Color(WARM).multiplyScalar(5) }));
+  led.position.set(MID, CAB_Y - 0.15, LED_Z); cab.add(led);
+  const haze = (() => { const [c, x] = sheet(256, 64), d = x.createImageData(256, 64);
+    for (let py = 0; py < 64; py++) for (let px = 0; px < 256; px++) { const u = px / 255, v = py / 63, e = Math.min(1, Math.min(u, 1 - u) / 0.14), a = Math.pow(1 - v, 2.2) * e * e * (3 - 2 * e) * 255; d.data.set([a, a, a, 255], (py * 256 + px) * 4); }
+    x.putImageData(d, 0, 0); return new THREE.CanvasTexture(c); })();
+  const glowMat = new THREE.MeshBasicMaterial({ map: haze, color: new THREE.Color(WARM).multiplyScalar(0.5), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
+  const wallGlow = new THREE.Mesh(new THREE.PlaneGeometry(LEN + 16, 7), glowMat); wallGlow.position.set(MID, CAB_Y - 3.5, WALL_Z + 0.06); cab.add(wallGlow);       // bloom on the wall under the line
+  const underGlow = new THREE.Mesh(new THREE.PlaneGeometry(LEN + 16, 12), glowMat); underGlow.rotation.x = Math.PI / 2; underGlow.position.set(MID, CAB_Y - 0.02, LED_Z + 6.2); cab.add(underGlow);   // and on the cabinet underside
+  strip.position.set(MID, CAB_Y - 0.5, WALL_Z + 13); strip.lookAt(MID, CAB_Y - 8.5, WALL_Z + 7); cab.add(strip);
+
+  M.ceramic.envMapIntensity = 0.3;      // the cup would burn out under the panels that shape the aluminium
+
+  return {
+    update(fs) {       // once per frame, before the main render
+      const tall = innerWidth <= 800, k = Math.min(Math.max((fs - 0.2) / 0.6, 0), 1);
+      cab.position.y = tall ? CAB_LIFT_TALL : CAB_LIFT * k * k * (3 - 2 * k);       // the LED line shows under the header in the hero only; later it would cut through the machine's top edge
+      camera.updateMatrixWorld();
+      top.visible = false; mirror.onBeforeRender(renderer, scene, camera); top.visible = true;   // the one reflection pass
+      mirrorMat.multiplyMatrices(mirror.material.uniforms.textureMatrix.value, mirrorInv);
+    }
+  };
+})();
+/* ===== KITCHEN SCENE END ===== */
+
+
+/* ---------- The machine's display ---------- */
+const sx = scrCanvas.getContext('2d'), SW = 704, SH = 1152, PAD = 36, GAP = 24, FULL = SW - 2 * PAD;
+const face = `"Inter", "Helvetica Neue", Arial, "Liberation Sans", sans-serif`;
+const C = { tile: '#1c1c1e', paper: '#f5f2ec', mute: '#a8a39b', gold: '#d8bd7c' };
+const ROWS = [['Anna', 'mild, mug'], ['Mum', 'strong, small cup'], ['Dad', 'strong, small cup'], ['Guest', 'medium, cup']];
+function rr(x, y, w, h, r) { sx.beginPath(); sx.roundRect(x, y, w, h, r); }
+function text(str, x, y, size, weight = 500, color = C.paper, align = 'left') { sx.font = `${weight} ${size}px ${face}`; sx.fillStyle = color; sx.textAlign = align; sx.textBaseline = 'middle'; sx.fillText(str, x, y); }
+function clear() { sx.fillStyle = '#000'; sx.fillRect(0, 0, SW, SH); }
+function drawHome(hi) {
+  clear(); text('Who is having coffee?', PAD + 8, 84, 52);
+  const y0 = 148, th = (SH - y0 - PAD - 3 * GAP) / 4;
+  ROWS.forEach(([n, c], i) => { const y = y0 + i * (th + GAP), on = i === hi;
+    rr(PAD, y, FULL, th, 44); sx.fillStyle = on ? C.gold : C.tile; sx.fill();
+    text(n, PAD + 32, y + th / 2 - 36, 72, 600, on ? '#000' : C.paper); text(c, PAD + 32, y + th / 2 + 44, 48, 400, on ? '#2a2110' : C.mute); });
+}
+function drawPour(p) {
+  clear(); text('Pouring for', PAD + 8, 96, 52, 500, C.mute); text('Mum', PAD + 4, 250, 168, 600); text('strong, small cup', PAD + 8, 390, 56, 400, C.gold);
+  rr(PAD, 520, FULL, 28, 14); sx.fillStyle = 'rgba(255,255,255,0.16)'; sx.fill();
+  rr(PAD, 520, Math.max(28, FULL * p), 28, 14); sx.fillStyle = C.gold; sx.fill();
+}
+function drawOrder(yes) {
+  clear(); text('About 8 pods left', PAD + 8, 84, 52, 500, C.mute); text('Order 2 boxes of', PAD + 6, 176, 60, 600); text('your usual pods?', PAD + 6, 254, 60, 600);
+  const y0 = 340, h = (SH - y0 - PAD - 2 * GAP) / 3;
+  ['Yes', 'Change', 'Not now'].forEach((l, i) => { const y = y0 + i * (h + GAP), on = yes && i === 0;
+    rr(PAD, y, FULL, h, 44); sx.fillStyle = on ? C.gold : C.tile; sx.fill(); text(l, SW / 2, y + h / 2, 64, 600, on ? '#000' : C.paper, 'center'); });
+}
+// A change of screen dips through black for 0.3 s, so the display never jumps.
+let drawn = '', group = '', fadeAt = -1;
+function show(grp, keyName, fn, time) {
+  if (grp !== group) { fadeAt = group === '' || reduceMotion ? -1 : time; group = grp; }
+  const fading = fadeAt >= 0 && time - fadeAt < 0.3;
+  if (keyName === drawn && !fading) return;
+  drawn = keyName; fn();
+  if (fading) { sx.fillStyle = `rgba(0,0,0,${(1 - (time - fadeAt) / 0.3).toFixed(3)})`; sx.fillRect(0, 0, SW, SH); drawn = ''; }
+  scrTex.needsUpdate = true;
+}
+
+/* ---------- Scroll: text leaves, the machine moves, text arrives ---------- */
+const root = document.documentElement;
+const sections = [...document.querySelectorAll('main section')];
+const copies = sections.map(s => s.querySelector('.copy'));
+const phone = document.querySelector('.phone-stage'), app = document.querySelector('.app-preview');
+const APP = sections.findIndex(s => s.classList.contains('app')), LAST = sections.length - 1;
+const pinned = !reduceMotion; if (pinned) root.classList.add('pin');
+const wide = () => innerWidth > 800;
+// p: camera, t: where it looks, ox/oy: where the machine sits in the frame (fraction of width/height; negative ox = to the right)
+const KEYS_WIDE = [
+  { p: [35, 24, 73], t: [1.6, 12.8, 0],   ox: -0.22, oy: 0 },     // hero: three-quarter view
+  { p: [19, 27, 37], t: [4.2, 19.5, 8],   ox: -0.29, oy: 0 },     // each of you: the display
+  { p: [15, 15, 43], t: [0.8, 12.4, 6],   ox: -0.22, oy: 0 },     // tastes like coffee: the cup
+  { p: [16, 31, 45], t: [4.4, 18.2, 8],   ox: -0.28, oy: 0 },     // pods: the display from higher up, with the cup below it
+  { p: [24, 20, 96], t: [2.2, 11.6, 0],   ox: 0.01,  oy: 0 },     // app: the machine steps back, the phone comes forward
+  { p: [10, 19, 108], t: [1.2, 11.4, 0],  ox: 0,     oy: 0.19 }    // closing: front, centred
+];
+const KEYS_TALL = [
+  { p: [30, 22, 60], t: [1.6, 12.6, 0],   ox: 0, oy: 0.2 },
+  { p: [14, 26, 30], t: [5.2, 20.4, 9],   ox: 0, oy: 0.2 },
+  { p: [18, 16, 36], t: [0.8, 12.8, 6],   ox: 0, oy: 0.2 },
+  { p: [7, 25, 32],  t: [5.6, 20.6, 9.5], ox: 0, oy: 0.2 },
+  { p: [20, 20, 82], t: [1.6, 12.4, 0],   ox: 0, oy: 0.2 },
+  { p: [10, 19, 78], t: [1.2, 12.4, 0],   ox: 0, oy: 0.2 }
+];
+let f = 0, fs = 0, forced = null;
+function readScroll() {
+  const y = scrollY; let i = 0;
+  while (i < LAST && sections[i + 1].offsetTop <= y) i++;
+  const a = sections[i].offsetTop, b = i < LAST ? sections[i + 1].offsetTop : a + 1;
+  f = forced !== null ? forced : Math.min(i + (y - a) / (b - a), LAST);
+  const max = root.scrollHeight - innerHeight;
+  root.style.setProperty('--scroll', forced !== null ? (forced / LAST).toFixed(4) : max > 0 ? (y / max).toFixed(4) : '0');
+  root.classList.toggle('scrolled', f > 0.08);
+}
+addEventListener('scroll', readScroll, { passive: true });
+function resize() { renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.fov = wide() ? 28 : 50; readScroll(); }
+addEventListener('resize', resize); resize(); fs = f;
+
+const pA = new THREE.Vector3(), pB = new THREE.Vector3(), tA = new THREE.Vector3(), tB = new THREE.Vector3(), look = new THREE.Vector3();
+const clamp01 = x => Math.min(Math.max(x, 0), 1);
+const smooth = x => { x = clamp01(x); return x * x * (3 - 2 * x); };
+const inOut = x => { x = clamp01(x); return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+showVessel('cup', true, true); setLevel(3.8);
+const clock = new THREE.Clock(); let pourT = 0, wasPour = false, appSince = -1, fixedScreen = null;
+
+function frame() {
+  const dt = Math.min(clock.getDelta(), 0.05), time = clock.elapsedTime;
+  fs = reduceMotion ? f : fs + (f - fs) * Math.min(1, dt * 6);
+  const w = innerWidth, h = innerHeight, keys = wide() ? KEYS_WIDE : KEYS_TALL;
+  const i = Math.min(Math.floor(fs), LAST - 1), frac = fs - i, e = inOut((frac - 0.25) / 0.5);     // the camera travels only while no text is on screen
+  const A = keys[i], B = keys[i + 1];
+  pA.fromArray(A.p); pB.fromArray(B.p); tA.fromArray(A.t); tB.fromArray(B.t);
+  camera.position.lerpVectors(pA, pB, e); look.lerpVectors(tA, tB, e); camera.lookAt(look);
+  camera.setViewOffset(w, h, w * (A.ox + (B.ox - A.ox) * e), h * (A.oy + (B.oy - A.oy) * e), w, h);
+  camera.updateProjectionMatrix();
+  const still = 1 - Math.sin(Math.PI * e);                                                        // 1 at rest, 0 mid-travel
+  machine.rotation.y = reduceMotion ? 0 : Math.sin(time * 0.4) * 0.03 * still;
+
+  // copy and phone: fully visible within 0.12 of their section, gone by 0.30
+  if (pinned) {
+    copies.forEach((c, k) => {
+      const o = 1 - smooth((Math.abs(fs - k) - 0.12) / 0.18);
+      c.style.setProperty('--o', o.toFixed(3)); c.style.setProperty('--y', ((fs > k ? -16 : 24) * (1 - o)).toFixed(1) + 'px');
+      c.style.visibility = o < 0.01 ? 'hidden' : 'visible';
+    });
+    const o = 1 - smooth((Math.abs(fs - APP) - 0.12) / 0.18);
+    phone.style.setProperty('--o', o.toFixed(3)); phone.style.setProperty('--y', ((fs > APP ? -20 : 32) * (1 - o)).toFixed(1) + 'px');
+    phone.style.setProperty('--s', (0.96 + 0.04 * o).toFixed(3)); phone.style.visibility = o < 0.01 ? 'hidden' : 'visible';
+    canvas.style.opacity = wide() ? '' : (1 - 0.6 * o).toFixed(3);                                // on phones the machine dims behind the app
+    if (fixedScreen) app.dataset.screen = fixedScreen;
+    else if (o > 0.5) { if (appSince < 0) appSince = time; app.dataset.screen = String(1 + Math.floor((time - appSince) / 3.2) % 3); }
+    else if (appSince >= 0) { appSince = -1; app.dataset.screen = '1'; }
+  }
+
+  // what the machine does in each part; it changes only after the camera has arrived
+  const part = Math.min(Math.floor(fs + 0.25), LAST);
+  if (part === 2 && !reduceMotion) {
+    if (!wasPour) pourT = 0; pourT += dt;
+    const k = clamp01((pourT - 0.9) / 4.2), level = 0.6 + (3.8 - 0.6) * k;
+    setLevel(k > 0 ? level : 0); stream.visible = k > 0 && k < 1;
+    const bottom = VESSELS.cup.base + level; stream.scale.y = SPOUT_TIP - bottom; stream.position.y = (SPOUT_TIP + bottom) / 2;
+    show('pour', 'pour' + Math.round(k * 200), () => drawPour(k), time);
+    if (pourT > 9.5) pourT = 0;
+  } else {
+    stream.visible = false; setLevel(3.8);
+    if (part === 1) { const hi = reduceMotion ? 1 : Math.floor(time / 1.5) % 3; show('names', 'names' + hi, () => drawHome(hi), time); }
+    else if (part === 3) { const yes = reduceMotion || (time % 5.6) > 2.4; show('order', 'order' + yes, () => drawOrder(yes), time); }
+    else show('home', 'home', () => drawHome(-1), time);
+  }
+  wasPour = part === 2;
+  vesselVisibility();
+  kitchen.update(fs);
+
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+/* Still renders for checking: #at-<section, e.g. 2 or 2.5>, optional app screen: #at-4-s2 */
+{ const m = location.hash.match(/^#at-([\d.]+)(?:-s(\d))?$/); if (m) { forced = parseFloat(m[1]); readScroll(); fs = f; pourT = 3.4; wasPour = true; if (m[2]) fixedScreen = m[2]; } }
+frame();
+</script>
+</body>
+</html>
