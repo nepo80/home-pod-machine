@@ -893,6 +893,26 @@ const kitchen = (() => {
   const underGlow = new THREE.Mesh(new THREE.PlaneGeometry(LEN + 16, 12), glowMat); underGlow.rotation.x = Math.PI / 2; underGlow.position.set(MID, CAB_Y - 0.02, LED_Z + 6.2); cab.add(underGlow);   // and on the cabinet underside
   strip.position.set(MID, CAB_Y - 0.5, WALL_Z + 13); strip.lookAt(MID, CAB_Y - 8.5, WALL_Z + 7); cab.add(strip);
 
+  /* Things that say kitchen: a board and a crock of spoons on the left, a jar of pods, a tap and a sink on the right */
+  const props = new THREE.Group(); scene.add(props);
+  const pm = (c, r = 0.6, m = 0) => new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: m, envMapIntensity: 0 });
+  const put = (g, mat, x, y, z) => { const o = new THREE.Mesh(g, mat); o.position.set(x, y, z); props.add(o); return o; };
+  const oak = pm(0x6a4c33, 0.6), cream = pm(0xd8d0c2, 0.5), steel = pm(0xb9bcc2, 0.35, 0.3), darkPod = pm(0x1a1a1c, 0.5), goldPod = pm(0xb8944e, 0.4, 0.3);
+  put(new THREE.BoxGeometry(21, 26, 1.6), oak, -31, 12.8, WALL_Z + 4).rotation.x = -0.12;
+  put(new THREE.CylinderGeometry(4.8, 4.2, 11, 32), cream, -20, 5.5, WALL_Z + 16);
+  [[-1.6, 0.16], [0.4, -0.1], [2, 0.2]].forEach(([dx, tilt], i) => { const hd = put(new THREE.CylinderGeometry(0.45, 0.45, 14, 10), oak, -20 + dx, 13.5 + i * 0.5, WALL_Z + 16); hd.rotation.z = -tilt;
+    const head = put(new THREE.SphereGeometry(1.9, 16, 10), oak, -20 + dx + Math.sin(tilt) * 7.5, 20.6 + i * 0.5, WALL_Z + 16); head.scale.set(1, 1.35, 0.35); });
+  const glass = new THREE.MeshStandardMaterial({ color: 0xc4ccd0, roughness: 0.15, transparent: true, opacity: 0.2, envMapIntensity: 0, depthWrite: false });
+  [[-2, -1.5], [1.6, -2], [0.2, 1.8], [-1.4, 1.2], [2, 0.6], [0, -0.4], [-2.2, 0], [1.2, 1.6], [0.4, -2.2]].forEach(([dx, dz], i) => { const p = put(new THREE.CylinderGeometry(1.85, 1.45, 2.6, 16), i % 3 ? darkPod : goldPod, 20 + dx, 1.5 + Math.floor(i / 3) * 2.7, WALL_Z + 17 + dz); p.rotation.set(i * 0.7, i * 1.3, i * 0.4); });
+  put(new THREE.CylinderGeometry(5, 5, 13, 32), glass, 20, 6.5, WALL_Z + 17);
+  put(new THREE.CylinderGeometry(5.2, 5.2, 1.4, 32), oak, 20, 13.7, WALL_Z + 17);
+  put(new THREE.CylinderGeometry(1.1, 1.3, 20, 20), steel, 46, 10, WALL_Z + 9);
+  put(new THREE.TorusGeometry(6, 1.1, 14, 28, Math.PI), steel, 46, 20, WALL_Z + 15).rotation.y = Math.PI / 2;
+  put(new THREE.CylinderGeometry(1.1, 1.1, 4, 20), steel, 46, 18, WALL_Z + 21);
+  put(new THREE.BoxGeometry(34, 0.3, 1), steel, 46, 0.15, WALL_Z + 14); put(new THREE.BoxGeometry(34, 0.3, 1), steel, 46, 0.15, WALL_Z + 42);
+  put(new THREE.BoxGeometry(1, 0.3, 29), steel, 29.5, 0.15, WALL_Z + 28); put(new THREE.BoxGeometry(1, 0.3, 29), steel, 62.5, 0.15, WALL_Z + 28);
+  put(new THREE.PlaneGeometry(32, 27), pm(0x050506, 0.9), 46, 0.08, WALL_Z + 28).rotation.x = -Math.PI / 2;
+
   M.ceramic.envMapIntensity = 0.3;      // the cup would burn out under the panels that shape the aluminium
 
   return {
