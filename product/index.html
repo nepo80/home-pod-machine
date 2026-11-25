@@ -175,7 +175,7 @@ h1 { font-family: Jura, Inter, Arial, sans-serif; font-weight: 500; letter-spaci
     <p class="price"><b>&pound;99</b>planned price &middot; not on sale yet</p>
     <p class="lede">Tap your name. Get your cup.</p>
     <ul class="facts"><li>12 cm wide, 26 cm tall, 29 cm deep</li><li>Takes an espresso cup or a mug</li><li>Works without an app</li></ul>
-    <div class="act"><button type="button" class="gold" id="buy">Buy now</button><button type="button" id="podBtn" hidden>Put a pod in</button><a class="applink-small" href="../mvp/" data-keep><button type="button" tabindex="-1">Open the app</button></a></div>
+    <div class="act"><button type="button" class="gold" id="buy">Buy now</button><button type="button" id="podBtn" hidden>Put a pod in</button><a class="applink-small" href="../mvp/" data-keep><button type="button" tabindex="-1" onclick="location.href=this.parentNode.href;return false">Open the app</button></a></div>
     <p id="buyMsg" hidden>You cannot buy it yet. This is a concept test for a university course, so nothing is sold or charged. <a href="../" data-keep>Leave your email on the start page</a> and we tell you if it becomes real.</p>
     <p class="hint" id="hint">Drag to turn the machine all the way round. Tap a name on its display.</p>
   </div>
