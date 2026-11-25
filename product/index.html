@@ -771,6 +771,33 @@ document.getElementById('buy').addEventListener('click', () => { document.getEle
 document.getElementById('appCard').addEventListener('click', () => count('to_app'));
 
 /* ---------- Putting a pod in: it comes over the top, turns flat and drops into the slot ---------- */
+{ /* Kitchen: worktop, tiled wall, wall cabinet with a warm light strip, and a few things that live on a worktop */
+  const km = (c, r = 0.6, o = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: 0, envMapIntensity: 0.35, ...o });
+  const kput = (g, mat, x, y, z, cast = true) => { const o = new THREE.Mesh(g, mat); o.position.set(x, y, z); o.castShadow = cast; o.receiveShadow = true; scene.add(o); return o; };
+  const tc = document.createElement('canvas'); tc.width = 200; tc.height = 200; const tx = tc.getContext('2d');
+  tx.fillStyle = '#4a4a4e'; tx.fillRect(0, 0, 200, 200); tx.fillStyle = '#2c2c30';
+  tx.fillRect(3, 3, 194, 94); tx.fillRect(-97, 103, 194, 94); tx.fillRect(103, 103, 194, 94);
+  const tiles = new THREE.CanvasTexture(tc); tiles.wrapS = tiles.wrapT = THREE.RepeatWrapping; tiles.repeat.set(20, 8); tiles.colorSpace = THREE.SRGBColorSpace;
+  const WZ = -50, wood = km(0x3a2a1e, 0.55), oak = km(0x7a583a, 0.6), cream = km(0xd8d0c2, 0.5), steel = km(0xb9bcc2, 0.3, { metalness: 0.6, envMapIntensity: 1 });
+  kput(new THREE.BoxGeometry(400, 4, 92), km(0x1c1c1f, 0.72, { envMapIntensity: 0.15 }), 0, -2, WZ + 46, false);              // stone worktop, top at 0
+  kput(new THREE.BoxGeometry(400, 90, 2), wood, 0, -49, WZ + 89, false);                                                    // base cabinet fronts
+  kput(new THREE.PlaneGeometry(400, 160), km(0xffffff, 0.3, { map: tiles, envMapIntensity: 0.5 }), 0, 80, WZ, false);        // tiled wall
+  kput(new THREE.BoxGeometry(400, 70, 32), wood, 0, 52 + 35, WZ + 16, false);                                               // wall cabinet, 52 cm above the worktop
+  for (let i = -3; i <= 3; i++) kput(new THREE.BoxGeometry(0.5, 70, 0.3), km(0x120d09, 0.8), i * 60 + 30, 87, WZ + 32.1, false);   // door gaps
+  kput(new THREE.BoxGeometry(150, 0.4, 0.8), new THREE.MeshBasicMaterial({ color: 0xffd9a6 }), 0, 51.7, WZ + 6, false);     // light strip
+  const strip = new THREE.PointLight(0xffb873, 1.5, 0, 0); strip.position.set(0, 48, WZ + 10); scene.add(strip);
+  kput(new THREE.BoxGeometry(22, 30, 1.6), oak, -34, 14.8, WZ + 3.5).rotation.x = -0.1;                                      // chopping board
+  kput(new THREE.CylinderGeometry(4.8, 4.2, 11, 32), cream, -24, 5.5, WZ + 14);                                              // crock of spoons
+  [[-1.6, 0.16], [0.4, -0.1], [2, 0.2]].forEach(([dx, tilt], i) => { kput(new THREE.CylinderGeometry(0.45, 0.45, 14, 10), oak, -24 + dx, 13.5 + i * 0.5, WZ + 14).rotation.z = -tilt;
+    kput(new THREE.SphereGeometry(1.9, 16, 10), oak, -24 + dx + Math.sin(tilt) * 7.5, 20.6 + i * 0.5, WZ + 14).scale.set(1, 1.35, 0.35); });
+  [[-2, -1.5], [1.6, -2], [0.2, 1.8], [-1.4, 1.2], [2, 0.6], [0, -0.4], [-2.2, 0], [1.2, 1.6], [0.4, -2.2]].forEach(([dx, dz], i) => { kput(new THREE.CylinderGeometry(1.85, 1.45, 2.6, 16), i % 3 ? km(0x1a1a1c, 0.5) : km(0xb8944e, 0.4), 26 + dx, 1.5 + Math.floor(i / 3) * 2.7, WZ + 15 + dz).rotation.set(i * 0.7, i * 1.3, i * 0.4); });
+  kput(new THREE.CylinderGeometry(5, 5, 13, 32), km(0xc4ccd0, 0.1, { transparent: true, opacity: 0.22, depthWrite: false }), 26, 6.5, WZ + 15, false);   // jar of pods
+  kput(new THREE.CylinderGeometry(5.2, 5.2, 1.4, 32), oak, 26, 13.7, WZ + 15);
+  kput(new THREE.CylinderGeometry(1.1, 1.3, 20, 20), steel, 58, 10, WZ + 9);                                                 // tap and sink
+  kput(new THREE.TorusGeometry(6, 1.1, 14, 28, Math.PI), steel, 58, 20, WZ + 15).rotation.y = Math.PI / 2;
+  kput(new THREE.CylinderGeometry(1.1, 1.1, 4, 20), steel, 58, 18, WZ + 21);
+  kput(new THREE.BoxGeometry(36, 0.3, 30), steel, 58, 0.1, WZ + 29, false); kput(new THREE.BoxGeometry(33, 0.3, 27), km(0x060607, 0.9), 58, 0.16, WZ + 29, false);
+}
 const podIn = mesh(new THREE.CylinderGeometry(1.85, 1.45, 2.6, 28), M.pod, 9, TOP + 8, SLOT_Z, { cast: false }); podIn.visible = false; machine.add(podIn);
 let podT = -1;
 function insertPod() {
