@@ -156,7 +156,8 @@ html, body { height: auto !important; } body { overflow: auto !important; } #sta
 h1 { font-family: Jura, Inter, Arial, sans-serif; font-weight: 500; letter-spacing: .02em; font-size: clamp(1.9rem, 3.2vw, 2.8rem); }
 .focus .words { opacity: 0; } .focus .words a, .focus .words button { pointer-events: none; }
 #zoomBack { position: absolute; left: 50%; bottom: 28px; translate: -50% 0; z-index: 4; } #zoomBack[hidden] { display: none; }
-@media (max-width: 900px) { #dispPanel { bottom: 84px; } }
+#dispPanel { z-index: 4; }
+@media (max-width: 900px) { #dispPanel { bottom: 84px; left: 50%; translate: -50% 0; flex-direction: row; flex-wrap: wrap; justify-content: center; width: min(560px, calc(100% - 32px)); } #dispPanel b { width: 100%; text-align: center; } }
 </style>
 </head>
 <body>
