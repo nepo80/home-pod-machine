@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home Pod Machine: the product</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500&family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+:root {
+  /* One visual world: a deep-blue studio with a black aluminium object. Single theme by choice.
+     Layout: the model owns the whole frame; words sit top-left, controls sit bottom-left, both left aligned. */
+  --studio-deep: #000000;
+  --studio-mid: #0d0b07;
+  --studio-glow: #3a2f18;
+  --gold: #cfae6a;
+  --paper: #f4f0e6;
+  --mute: rgba(255,255,255,.74);
+  --panel: rgba(18, 18, 20, 0.78);
+  --display: "Bodoni Moda", "Didot", "Bodoni MT", Georgia, serif;
+  --body: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--studio-deep);
+  color: var(--paper);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.45;
+  overflow: hidden;
+}
+#stage {
+  position: relative;
+  height: 100%;
+  background:
+    radial-gradient(ellipse 62% 56% at 58% 44%, var(--studio-glow) 0%, var(--studio-mid) 42%, var(--studio-deep) 100%);
+}
+#view { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: pan-y; cursor: grab; }
+#view.grabbing { cursor: grabbing; }
+#view.tap { cursor: pointer; }
+.shade { position: absolute; left: 0; right: 0; bottom: 0; height: 190px; pointer-events: none;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.94) 0%, rgba(0, 0, 0, 0.7) 55%, rgba(0, 0, 0, 0) 100%); }
+
+.words {
+  position: absolute; top: clamp(16px, 4vh, 40px); left: clamp(16px, 4vw, 48px);
+  max-width: min(27rem, calc(100% - 32px));
+  pointer-events: none;
+}
+h1 {
+  font-family: var(--display); font-weight: 400; font-optical-sizing: auto;
+  font-size: clamp(1.75rem, 3.6vw, 3.1rem); line-height: 1.06; letter-spacing: -0.005em;
+  margin: 0 0 0.6rem; text-wrap: balance;
+}
+.words p { margin: 0; color: var(--mute); max-width: 24rem; }
+.words .hint { margin-top: 0.7rem; color: var(--gold); font-size: 0.9rem; }
+.note { font-size: 0.78rem; color: var(--mute); }
+.note.corner { position: absolute; right: clamp(16px, 4vw, 48px); top: clamp(16px, 4vh, 40px); text-align: right; max-width: 16rem; margin: 0; }
+.note.inline { display: none; flex-basis: 100%; margin: 0; font-size: 0.72rem; }
+.words { transition: opacity 0.3s; }
+.close-up .words { opacity: 0; }
+
+.controls {
+  position: absolute; left: clamp(16px, 4vw, 48px); right: clamp(16px, 4vw, 48px); bottom: clamp(14px, 3.2vh, 32px);
+  display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: flex-end;
+}
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; max-width: 100%; }
+legend { padding: 0; margin-bottom: 6px; font-size: 0.8rem; color: var(--mute); }
+.row { display: flex; flex-wrap: wrap; gap: 6px; }
+button {
+  font: inherit; font-size: 0.87rem; font-weight: 500; color: var(--paper);
+  background: var(--panel); border: 1px solid rgba(180, 192, 220, 0.3);
+  min-height: 44px; padding: 8px 15px; border-radius: 999px; cursor: pointer; white-space: nowrap;
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+}
+button:hover { border-color: var(--gold); }
+button[aria-pressed="true"] { background: var(--paper); color: #000000; border-color: var(--paper); }
+button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+/* The choices on the machine's display, repeated as real buttons for keyboards and screen readers */
+.sr { position: absolute; left: clamp(16px, 4vw, 48px); top: 50%; display: flex; flex-direction: column; gap: 6px; }
+.sr p { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); margin: 0; }
+.sr button { position: absolute; width: 1px; height: 1px; min-height: 0; padding: 0; overflow: hidden; clip-path: inset(50%); }
+.sr button:focus-visible { position: static; width: auto; height: auto; min-height: 44px; padding: 8px 15px; clip-path: none; }
+
+.dim {
+  position: absolute; left: 0; top: 0; transform: translate(-50%, -50%);
+  font-size: 0.8rem; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap;
+  color: #000000; background: var(--gold); padding: 2px 8px; border-radius: 4px;
+  pointer-events: none; display: none;
+}
+.dims-on .dim { display: block; }
+#fallback { position: absolute; inset: 0; display: none; place-items: center; padding: 24px; text-align: center; }
+
+@media (max-width: 720px), (max-height: 520px) {
+  .note.corner { display: none; }
+  .note.inline { display: block; }
+  .words p.lede { display: none; }
+  legend { margin-bottom: 4px; }
+  .controls { gap: 8px 16px; }
+  fieldset { width: 100%; }
+  .row { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+  .shade { height: 310px; }
+}
+@media (max-height: 520px) {
+  fieldset { width: auto; }
+  legend { display: none; }
+  .shade { height: 110px; }
+}
+.words { pointer-events: none; max-width: min(25rem, calc(100% - 32px)); }
+.words a, .words button { pointer-events: auto; }
+.crumbs { display: flex; gap: 8px; align-items: center; font-size: 0.86rem; margin-bottom: 1.1rem; }
+.crumbs a { color: var(--gold); text-decoration: none; padding: 6px 0; } .crumbs a:hover { text-decoration: underline; }
+.crumbs span { color: var(--paper); font-weight: 600; } .crumbs i { color: var(--mute); font-style: normal; }
+.price { font-size: 1rem; margin: 0 0 0.7rem !important; } .price b { color: var(--paper); font-size: 1.5rem; font-weight: 600; margin-right: 6px; }
+.facts { list-style: none; padding: 0; margin: 0.7rem 0 0; color: var(--mute); font-size: 0.9rem; } .facts li { padding: 2px 0; } .facts li::before { content: "\2013  "; color: var(--gold); }
+.act { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 1rem; }
+button.gold, a.gold { background: var(--gold); color: #000; border-color: var(--gold); font-weight: 600; }
+#buyMsg { margin-top: 0.7rem; padding: 10px 12px; border: 1px solid var(--gold); border-radius: 12px; font-size: 0.9rem; color: var(--paper); background: var(--panel); pointer-events: auto; max-width: 23rem; }
+#buyMsg a { color: var(--gold); }
+.appcard { position: absolute; right: clamp(16px, 4vw, 48px); top: 50%; transform: translateY(-50%); width: 150px; text-decoration: none; color: var(--paper); text-align: center; }
+.appcard .ph { display: block; width: 122px; height: 236px; margin: 0 auto 10px; border: 1px solid #3a3a3d; border-radius: 22px; background: #0b0b0c; padding: 7px; transition: border-color .2s, transform .2s; }
+.appcard:hover .ph, .appcard:focus-visible .ph { border-color: var(--gold); transform: translateY(-3px); }
+.appcard .sc { display: flex; flex-direction: column; gap: 6px; height: 100%; border-radius: 16px; background: #111113; padding: 12px 9px; text-align: left; font-size: 9.5px; color: var(--mute); }
+.appcard .sc b { color: var(--paper); font-size: 12px; font-weight: 600; } .appcard .sc i { font-style: normal; background: #1c1c1e; border-radius: 7px; padding: 6px; }
+.appcard .sc u { text-decoration: none; margin-top: auto; background: var(--gold); color: #000; border-radius: 999px; padding: 6px; text-align: center; font-weight: 600; }
+.appcard strong { display: block; font-size: 0.92rem; font-weight: 600; } .appcard small { color: var(--mute); font-size: 0.8rem; }
+@media (max-width: 900px) { .appcard { display: none; } .facts { display: none; } }
+@media (min-width: 901px) { .applink-small { display: none; } }
+</style>
+</head>
+<body>
+<main id="stage">
+  <canvas id="view" aria-label="3D model of a slim black aluminium pod coffee machine. A small touch display floats beside its top right corner and an espresso cup stands under the spout. Drag sideways to turn it."></canvas>
+  <div class="shade"></div>
+
+  <div class="words">
+    <nav class="crumbs" aria-label="Pages"><a href="../" data-keep>Start</a><i>/</i><span>Product</span><i>/</i><a href="../mvp/" data-keep>App</a></nav>
+    <h1>Home Pod Machine</h1>
+    <p class="price"><b>&pound;99</b>planned price &middot; not on sale yet</p>
+    <p class="lede">A slim pod machine for Lavazza&rsquo;s existing pods. Tap your name on the display and you get your cup, at your strength and your size. It learns from one tap of feedback, and it asks before it reorders pods. No subscription.</p>
+    <ul class="facts"><li>12 cm wide, 26 cm tall, 29 cm deep</li><li>Takes an espresso cup or a mug</li><li>Works without an app</li></ul>
+    <div class="act"><button type="button" class="gold" id="buy">Buy now</button><button type="button" id="podBtn">Put a pod in</button><a class="applink-small" href="../mvp/" data-keep><button type="button" tabindex="-1">Open the app</button></a></div>
+    <p id="buyMsg" hidden>You cannot buy it yet. This is a concept test for a university course, so nothing is sold or charged. <a href="../" data-keep>Leave your email on the start page</a> and we tell you if it becomes real.</p>
+    <p class="hint" id="hint">Drag to turn the machine all the way round. Tap a name on its display.</p>
+  </div>
+
+  <a class="appcard" id="appCard" href="../mvp/" data-keep aria-label="Open the app">
+    <span class="ph"><span class="sc"><b>Good morning</b><i>9 pods left<br>enough until Saturday</i><i>Anna &middot; mild mug<br>Mum &middot; strong cup</i><u>Order pods</u></span></span>
+    <strong>The app</strong><small>Optional. Tap the phone to try it.</small></a>
+  <p class="note corner">Student concept for a course project. Not a Lavazza product and not affiliated with Lavazza.</p>
+
+  <div class="sr" id="sr"></div>
+
+  <div class="controls">
+    <fieldset>
+      <legend>Look at</legend>
+      <div class="row" id="views">
+        <button type="button" data-view="hero" aria-pressed="true">Front</button>
+        <button type="button" data-view="display" aria-pressed="false">Display</button>
+        <button type="button" data-view="side" aria-pressed="false">Side</button>
+        <button type="button" data-view="tank" aria-pressed="false">Water tank</button>
+        <button type="button" data-view="pods" aria-pressed="false">Empty the pods</button>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Show on the display</legend>
+      <div class="row" id="screens">
+        <button type="button" data-screen="home" aria-pressed="true">Names</button>
+        <button type="button" data-screen="feedback" aria-pressed="false">After the cup</button>
+        <button type="button" data-screen="reorder" aria-pressed="false">Pods running low</button>
+        <button type="button" data-screen="water" aria-pressed="false">Water low</button>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Scene</legend>
+      <div class="row">
+        <button type="button" id="toggleDims" aria-pressed="false">Measurements</button>
+        <button type="button" id="toggleMug" aria-pressed="true">Cup</button>
+      </div>
+    </fieldset>
+    <p class="note inline">Student concept for a course project. Not a Lavazza product and not affiliated with Lavazza.</p>
+  </div>
+
+  <div class="dim" id="dimW">12 cm wide, 17 with the display</div>
+  <div class="dim" id="dimD">29 cm deep</div>
+  <div class="dim" id="dimH">26 cm tall</div>
+  <div class="dim" id="dimC">13 cm for a mug</div>
+  <div class="dim" id="dimE">6.8 cm for an espresso cup</div>
+
+  <div id="fallback"><p>This 3D model needs WebGL, which this browser has switched off.</p></div>
+</main>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+/* ---------- Measurements in centimetres (1 unit = 1 cm) ---------- */
+const W = 12, BASE_H = 1.2, TOP = 26;
+const BACK = -14.9, FRONT = 14.1;                 // footprint 12 x 29
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const canvas = document.getElementById('view');
+const stage = document.getElementById('stage');
+const narrow = () => stage.clientWidth < 700;
+
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
+} catch (e) {
+  document.getElementById('fallback').style.display = 'grid';
+  throw e;
+}
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.03).texture;
+
+const camera = new THREE.PerspectiveCamera(30, 1, 1, 600);
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true; controls.dampingFactor = 0.07;
+controls.enablePan = false; controls.minDistance = 12; controls.maxDistance = 150;
+controls.maxPolarAngle = Math.PI * 0.49;
+controls.autoRotate = !reduceMotion; controls.autoRotateSpeed = 0.55;
+
+/* ---------- Lights: neutral, so black stays black ---------- */
+const key = new THREE.DirectionalLight(0xfff6ea, 2.3);
+key.position.set(26, 48, 34); key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048); key.shadow.radius = 7; key.shadow.bias = -0.0006; key.shadow.normalBias = 0.06;
+Object.assign(key.shadow.camera, { left: -36, right: 36, top: 36, bottom: -36, near: 5, far: 140 });
+scene.add(key);
+const rim = new THREE.DirectionalLight(0xdfe9ff, 2.0); rim.position.set(-34, 26, -30); scene.add(rim);
+const rim2 = new THREE.DirectionalLight(0xffffff, 1.2); rim2.position.set(30, 14, -38); scene.add(rim2);
+scene.add(new THREE.HemisphereLight(0xe8eeff, 0x101c38, 1.1));
+const fill = new THREE.DirectionalLight(0xffffff, 1.3); fill.position.set(10, 8, 50); scene.add(fill);
+const fillR = new THREE.DirectionalLight(0xffffff, 0.9); fillR.position.set(50, 12, 6); scene.add(fillR);
+
+/* ---------- Fine bead-blasted grain, made in the page ---------- */
+function grainTexture() {
+  const S = 256, c = document.createElement('canvas'); c.width = c.height = S;
+  const x = c.getContext('2d'), d = x.createImageData(S, S);
+  for (let i = 0; i < S * S; i++) { const v = 205 + Math.floor(Math.random() * 50); d.data.set([v, v, v, 255], i * 4); }
+  x.putImageData(d, 0, 0);
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(1.4, 1.4); return t;
+}
+const grain = grainTexture();
+
+/* ---------- Materials ---------- */
+const M = {
+  alu: new THREE.MeshPhysicalMaterial({ color: 0x18181a, metalness: 0.85, roughness: 0.46, roughnessMap: grain, bumpMap: grain, bumpScale: 0.02, clearcoat: 0.15, clearcoatRoughness: 0.5, envMapIntensity: 1.05 }),
+  aluSoft: new THREE.MeshPhysicalMaterial({ color: 0x121214, metalness: 0.8, roughness: 0.54, roughnessMap: grain, envMapIntensity: 1.0 }),
+  gold: new THREE.MeshStandardMaterial({ color: 0xcfae6a, metalness: 1, roughness: 0.24, envMapIntensity: 1.3 }),
+  steel: new THREE.MeshStandardMaterial({ color: 0xc9cdd1, metalness: 1, roughness: 0.32, envMapIntensity: 1.1 }),
+  darkSteel: new THREE.MeshStandardMaterial({ color: 0x5c6166, metalness: 1, roughness: 0.4, envMapIntensity: 1.0 }),
+  gloss: new THREE.MeshPhysicalMaterial({ color: 0x050507, metalness: 0, roughness: 0.07, clearcoat: 1, clearcoatRoughness: 0.04 }),
+  slot: new THREE.MeshStandardMaterial({ color: 0x050506, metalness: 0.2, roughness: 0.85 }),
+  tank: new THREE.MeshPhysicalMaterial({ color: 0x5a6470, metalness: 0, roughness: 0.04, transparent: true, opacity: 0.34, depthWrite: false, envMapIntensity: 1.8, side: THREE.DoubleSide }),
+  water: new THREE.MeshPhysicalMaterial({ color: 0x9fd0f2, metalness: 0, roughness: 0.02, transparent: true, opacity: 0.4, depthWrite: false, envMapIntensity: 1.2 }),
+  mark: new THREE.MeshBasicMaterial({ color: 0xe9eef5 }),
+  ceramic: new THREE.MeshPhysicalMaterial({ color: 0xf1ede4, metalness: 0, roughness: 0.34, clearcoat: 0.7, clearcoatRoughness: 0.15, side: THREE.DoubleSide }),
+  coffee: new THREE.MeshStandardMaterial({ color: 0x3a1e0c, roughness: 0.2, metalness: 0 }),
+  pod: new THREE.MeshStandardMaterial({ color: 0x1b3f8f, metalness: 0.5, roughness: 0.4 })
+};
+
+/* ---------- Shape helpers ---------- */
+function insetPoly(pts, d) {            // counter-clockwise polygon, move every edge inward by d
+  const n = pts.length, out = [];
+  for (let i = 0; i < n; i++) {
+    const a = pts[(i - 1 + n) % n], p = pts[i], b = pts[(i + 1) % n];
+    const e1 = new THREE.Vector2(p[0] - a[0], p[1] - a[1]).normalize();
+    const e2 = new THREE.Vector2(b[0] - p[0], b[1] - p[1]).normalize();
+    const n1 = new THREE.Vector2(-e1.y, e1.x), n2 = new THREE.Vector2(-e2.y, e2.x);
+    const m = n1.clone().add(n2).normalize();
+    const k = d / Math.max(m.dot(n1), 0.2);
+    out.push([p[0] + m.x * k, p[1] + m.y * k]);
+  }
+  return out;
+}
+function roundedPoly(pts, radii) {
+  const s = new THREE.Shape(), n = pts.length;
+  for (let i = 0; i < n; i++) {
+    const p = pts[i], a = pts[(i - 1 + n) % n], b = pts[(i + 1) % n], r = radii[i];
+    const va = new THREE.Vector2(a[0] - p[0], a[1] - p[1]).normalize();
+    const vb = new THREE.Vector2(b[0] - p[0], b[1] - p[1]).normalize();
+    const p1 = [p[0] + va.x * r, p[1] + va.y * r], p2 = [p[0] + vb.x * r, p[1] + vb.y * r];
+    if (i === 0) s.moveTo(p1[0], p1[1]); else s.lineTo(p1[0], p1[1]);
+    s.quadraticCurveTo(p[0], p[1], p2[0], p2[1]);
+  }
+  s.closePath(); return s;
+}
+function rrShape(w, d, r) {
+  const hw = w / 2, hd = d / 2;
+  return roundedPoly([[-hw, -hd], [hw, -hd], [hw, hd], [-hw, hd]], [r, r, r, r]);
+}
+function slab(w, h, t, r, b = 0.15) {      // flat panel facing +z, centred, with softened edges
+  b = Math.min(b, t / 2 - 0.005);
+  const g = new THREE.ExtrudeGeometry(rrShape(w - 2 * b, h - 2 * b, Math.max(r - b, 0.05)),
+    { depth: t - 2 * b, bevelEnabled: true, bevelThickness: b, bevelSize: b, bevelSegments: 4, curveSegments: 16 });
+  g.translate(0, 0, -(t - 2 * b) / 2); return g;
+}
+function rrPrism(w, d, h, r, b = 0.25) {   // upright block with rounded plan corners; sits on y = 0
+  const g = slab(w, d, h, r, b); g.translate(0, 0, h / 2); g.rotateX(-Math.PI / 2); return g;
+}
+function mesh(geo, mat, x = 0, y = 0, z = 0, opts = {}) {
+  const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z);
+  m.castShadow = opts.cast !== false; m.receiveShadow = opts.receive !== false; return m;
+}
+const rbox = (w, h, d, r) => new RoundedBoxGeometry(w, h, d, 3, r);
+
+const machine = new THREE.Group(); scene.add(machine);
+
+/* ---------- Body: one anodised aluminium shell with soft, continuous edges; side profile in (z, y) ---------- */
+const HEAD_Z = 13, HEAD_Y = 17.5, COL_Z = 3;
+const profile = [[-8.5, BASE_H], [COL_Z, BASE_H], [COL_Z, HEAD_Y], [HEAD_Z, HEAD_Y], [HEAD_Z, TOP], [-8.5, TOP]];
+const cornerR = [0.5, 0.3, 0.5, 1.8, 2.8, 2.8];
+const concave = [false, false, true, false, false, false];
+const BEV = 1.0;
+{
+  const inner = insetPoly(profile, BEV);
+  const radii = cornerR.map((r, i) => concave[i] ? r + BEV : Math.max(r - BEV, 0.08));
+  const g = new THREE.ExtrudeGeometry(roundedPoly(inner, radii),
+    { depth: W - 2 * BEV, bevelEnabled: true, bevelThickness: BEV, bevelSize: BEV, bevelSegments: 10, curveSegments: 24 });
+  g.translate(0, 0, -(W - 2 * BEV) / 2); g.rotateY(-Math.PI / 2);
+  machine.add(mesh(g, M.alu));
+}
+
+/* ---------- Base and the one gold line under the column ---------- */
+machine.add(mesh(rrPrism(W, FRONT - BACK, BASE_H, 2.4, 0.35), M.aluSoft, 0, 0, (FRONT + BACK) / 2));
+machine.add(mesh(rrPrism(W + 0.06, 11.56, 0.14, 1.03, 0.04), M.gold, 0, BASE_H - 0.02, -2.75));
+
+/* ---------- Drip tray ---------- */
+const TRAY_Z = 8.4, TRAY_TOP = BASE_H + 1.75, REST_Y = TRAY_TOP + 0.14;
+machine.add(mesh(rrPrism(10.4, 10.4, 1.75, 1.8, 0.3), M.aluSoft, 0, BASE_H, TRAY_Z));
+machine.add(mesh(rrPrism(9.2, 9.2, 0.14, 1.3, 0.05), M.darkSteel, 0, TRAY_TOP - 0.02, TRAY_Z));
+for (let i = 0; i < 7; i++) machine.add(mesh(rbox(7, 0.06, 0.45, 0.02), M.slot, 0, TRAY_TOP + 0.13, TRAY_Z - 3.3 + i * 1.1, { cast: false }));
+
+/* ---------- Used-pod drawer: flush face with a finger recess ---------- */
+machine.add(mesh(new THREE.BoxGeometry(9.1, 5.3, 0.02), M.slot, 0, 6.1, COL_Z + 0.012, { cast: false }));     // dark gap around the face
+const drawer = new THREE.Group(); machine.add(drawer);
+drawer.add(mesh(rbox(8.8, 5.0, 0.14, 0.06), M.alu, 0, 6.1, COL_Z + 0.09));
+drawer.add(mesh(rbox(4.6, 0.55, 0.03, 0.01), M.slot, 0, 8.05, COL_Z + 0.165, { cast: false }));                // finger recess
+const ledOn = new THREE.MeshBasicMaterial({ color: 0xffe2a6 }), ledOff = new THREE.MeshBasicMaterial({ color: 0x2a2620 });
+const leds = [];
+for (let i = 0; i < 4; i++) { const l = mesh(new THREE.BoxGeometry(0.42, 0.12, 0.02), i < 2 ? ledOn : ledOff, 2.2 + i * 0.56, 4.15, COL_Z + 0.17, { cast: false, receive: false }); leds.push(l); drawer.add(l); }
+drawer.add(mesh(new THREE.BoxGeometry(8.4, 0.2, 8.4), M.slot, 0, 3.85, -1.3));                                  // the container behind the face
+for (const s of [-4.1, 4.1]) drawer.add(mesh(new THREE.BoxGeometry(0.2, 4.4, 8.4), M.slot, s, 6.0, -1.3));
+drawer.add(mesh(new THREE.BoxGeometry(8.4, 4.4, 0.2), M.slot, 0, 6.0, -5.5));
+[[-2.0, 5.0, 0.2, 0.3], [1.9, 5.0, -0.6, -0.5], [-0.4, 5.3, -3.1, 0.9], [1.6, 5.2, -3.6, 1.4]].forEach(([x, y, z, r]) => {
+  const p = mesh(new THREE.CylinderGeometry(1.85, 1.45, 2.6, 28), M.pod, x, y, z, { cast: false }); p.rotation.set(r, r * 0.7, 1.2 + r); drawer.add(p);
+});
+
+/* ---------- Fold-down shelf for a small cup: down for espresso, folded up for a mug ---------- */
+const SHELF_Y = 9.0, SHELF_LEN = 8.0, SHELF_TOP = SHELF_Y + 0.3;
+const shelf = new THREE.Group(); shelf.position.set(0, SHELF_Y, COL_Z + 0.25); machine.add(shelf);
+shelf.add(mesh(rbox(9.0, 0.45, SHELF_LEN, 0.2), M.alu, 0, 0, SHELF_LEN / 2));
+shelf.add(mesh(rbox(7.6, 0.06, 6.4, 0.02), M.darkSteel, 0, 0.24, SHELF_LEN / 2 + 0.2, { cast: false }));
+for (let i = 0; i < 5; i++) shelf.add(mesh(rbox(5.8, 0.04, 0.4, 0.015), M.slot, 0, 0.275, 2.0 + i * 1.1, { cast: false }));
+let shelfA = 0, shelfGoal = 0;                 // 0 = down, 1 = folded up against the column
+function placeShelf() { shelf.rotation.x = -Math.PI / 2 * shelfA * shelfA * (3 - 2 * shelfA); }
+
+/* ---------- Spout ---------- */
+const SPOUT_Z = 8.0, SPOUT_TIP = 16.1;
+machine.add(mesh(new THREE.CylinderGeometry(2.0, 2.0, 0.5, 48), M.aluSoft, 0, 17.25, SPOUT_Z));
+{ const t = mesh(new THREE.TorusGeometry(2.0, 0.09, 16, 72), M.gold, 0, 17.0, SPOUT_Z); t.rotation.x = Math.PI / 2; machine.add(t); }
+machine.add(mesh(new THREE.CylinderGeometry(0.72, 0.6, 0.9, 32), M.steel, 0, 16.55, SPOUT_Z));
+
+/* ---------- Pod slot and lever on top, all in the body's black ---------- */
+const SLOT_Z = 0.8;
+machine.add(mesh(rbox(4.8, 0.1, 3.1, 0.04), M.gloss, 0, TOP + 0.03, SLOT_Z, { cast: false }));
+for (const s of [-3.4, 3.4]) machine.add(mesh(rbox(0.42, 0.36, 9.6, 0.14), M.aluSoft, s, TOP + 0.26, -0.2));
+machine.add(mesh(rbox(7.22, 0.44, 0.7, 0.18), M.aluSoft, 0, TOP + 0.3, 4.6));
+
+/* ---------- Power and stop button, flush on top ---------- */
+const button = mesh(new THREE.CylinderGeometry(0.8, 0.8, 0.16, 48), M.steel, 0, TOP + 0.04, 8.0); machine.add(button);
+{
+  const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d');
+  x.strokeStyle = '#2b2d30'; x.lineWidth = 9; x.lineCap = 'round';
+  x.beginPath(); x.arc(64, 68, 30, -Math.PI * 0.32, Math.PI * 1.32); x.stroke();
+  x.beginPath(); x.moveTo(64, 28); x.lineTo(64, 64); x.stroke();
+  const icon = new THREE.Mesh(new THREE.CircleGeometry(0.62, 32), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false }));
+  icon.rotation.x = -Math.PI / 2; icon.position.set(0, TOP + 0.13, 8.0); machine.add(icon);
+}
+
+/* ---------- Display: its own slim panel, floating beside the top right corner on a short arm ---------- */
+const SCR_W = 4.4, SCR_H = 7.2;                                    // portrait, 16 px per mm
+const scrCanvas = document.createElement('canvas'); scrCanvas.width = 704; scrCanvas.height = 1152;
+const scrTex = new THREE.CanvasTexture(scrCanvas); scrTex.colorSpace = THREE.SRGBColorSpace; scrTex.anisotropy = 8;
+const disp = new THREE.Group(); disp.position.set(8.3, 21.9, HEAD_Z + 1.4); disp.rotation.set(-0.21, -0.17, 0, 'YXZ'); machine.add(disp);
+disp.add(mesh(slab(5.0, 7.8, 0.7, 1.05, 0.2), M.alu));
+{ const glass = mesh(new THREE.ShapeGeometry(rrShape(4.84, 7.64, 0.95), 14), M.gloss, 0, 0, 0.352, { cast: false }); disp.add(glass); }
+const screen = new THREE.Mesh(new THREE.ShapeGeometry(rrShape(SCR_W, SCR_H, 0.74), 14), new THREE.MeshBasicMaterial({ map: scrTex, toneMapped: false }));
+{ const uv = screen.geometry.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) / SCR_W + 0.5, uv.getY(i) / SCR_H + 0.5); }
+screen.position.z = 0.358; disp.add(screen);
+{ // the arm: a steel stub out of the head's side, a short neck to the panel's back, one gold ring
+  const neck = mesh(new THREE.CylinderGeometry(0.8, 0.8, 2.0, 40), M.aluSoft, 0, 0, -1.3); neck.rotation.x = Math.PI / 2; disp.add(neck);
+  const ring = mesh(new THREE.TorusGeometry(0.84, 0.07, 14, 64), M.gold, 0, 0, -0.37); disp.add(ring);
+  const arm = mesh(new THREE.CylinderGeometry(0.5, 0.5, 3.6, 32), M.steel, -1.8, 0, -1.9); arm.rotation.z = Math.PI / 2; disp.add(arm);
+}
+
+/* ---------- The name on the head's front face: plain letters, not the company's logo ---------- */
+const markCanvas = document.createElement('canvas'); markCanvas.width = 1024; markCanvas.height = 128;
+const markTex = new THREE.CanvasTexture(markCanvas); markTex.anisotropy = 8;
+function drawMark() {
+  const x = markCanvas.getContext('2d'); x.fillStyle = '#000'; x.fillRect(0, 0, 1024, 128);
+  x.fillStyle = '#fff'; x.textBaseline = 'middle'; x.textAlign = 'left';
+  x.font = '500 76px "Instrument Sans", Arial, "Liberation Sans", sans-serif';
+  const word = 'LAVAZZA', gap = 34; let wsum = -gap; for (const ch of word) wsum += x.measureText(ch).width + gap;
+  let cx = 512 - wsum / 2; for (const ch of word) { x.fillText(ch, cx, 68); cx += x.measureText(ch).width + gap; }
+  markTex.needsUpdate = true;
+}
+{
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(5.0, 0.62), new THREE.MeshStandardMaterial({ color: 0xcfae6a, emissive: 0x8a6f38, emissiveIntensity: 0.9, metalness: 1, roughness: 0.3, alphaMap: markTex, transparent: true, depthWrite: false }));
+  m.position.set(-1.6, 20.2, HEAD_Z + 0.02); machine.add(m);
+}
+
+/* ---------- Water tank: docked behind the body, filled in place through a flap ---------- */
+const TANK_W = 9.8, TANK_D = 5.5, TANK_Z = -8.6 - TANK_D / 2, TANK_H = 20.3;
+machine.add(mesh(rrPrism(TANK_W + 0.6, 5.9, 1.5, 2.3, 0.25), M.aluSoft, 0, BASE_H, TANK_Z - 0.1));                // locating lip
+machine.add(mesh(rrPrism(TANK_W, TANK_D, TANK_H, 2.2, 0.3), M.tank, 0, BASE_H, TANK_Z, { cast: false, receive: false }));
+machine.add(mesh(rrPrism(TANK_W - 0.5, TANK_D - 0.5, 13, 1.95, 0.2), M.water, 0, BASE_H + 0.4, TANK_Z, { cast: false, receive: false }));
+machine.add(mesh(rrPrism(TANK_W + 0.06, TANK_D + 0.06, 0.1, 2.23, 0.02), M.mark, 0, BASE_H + 17.6, TANK_Z, { cast: false, receive: false }));   // MAX line
+const LID_Y = BASE_H + TANK_H;
+machine.add(mesh(rrPrism(TANK_W + 0.3, TANK_D + 0.3, 0.9, 2.3, 0.3), M.alu, 0, LID_Y, TANK_Z));
+machine.add(mesh(rbox(5.0, 0.08, 2.2, 0.03), M.gloss, 0, LID_Y + 0.93, TANK_Z + 1.3, { cast: false }));            // fill flap, next to the body
+machine.add(mesh(rbox(1.4, 0.16, 0.4, 0.06), M.steel, 0, LID_Y + 1.0, TANK_Z + 0.35, { cast: false }));
+machine.add(mesh(rbox(6.4, 0.32, 0.45, 0.12), M.steel, 0, LID_Y + 1.06, TANK_Z - 2.0));                            // fold-up handle
+for (const s of [-3.0, 3.0]) machine.add(mesh(rbox(0.4, 0.3, 1.5, 0.1), M.steel, s, LID_Y + 1.05, TANK_Z - 1.3));
+
+/* ---------- Espresso cup and mug ---------- */
+const VESSELS = {
+  cup: { base: SHELF_TOP, r: y => 1.7 + 0.193 * (y - 0.6) - 0.03, floor: 0.6, group: new THREE.Group() },
+  mug: { base: REST_Y, r: y => 3.25 + 0.058 * (y - 0.9) - 0.03, floor: 0.9, group: new THREE.Group() }
+};
+{
+  const lathe = pts => new THREE.LatheGeometry(pts.map(p => new THREE.Vector2(p[0], p[1])), 72);
+  const c = VESSELS.cup.group;
+  c.add(mesh(lathe([[0, 0], [1.6, 0], [2.0, 0.2], [2.8, 4.8], [2.8, 5.0], [2.55, 5.0], [1.7, 0.6], [0, 0.6]]), M.ceramic));
+  const h2 = mesh(new THREE.TorusGeometry(1.1, 0.27, 14, 32, Math.PI), M.ceramic, 2.45, 2.8, 0); h2.rotation.z = -Math.PI / 2; c.add(h2);
+  const g = VESSELS.mug.group;
+  g.add(mesh(lathe([[0, 0], [3.1, 0], [3.5, 0.25], [4.05, 9.2], [4.05, 9.5], [3.75, 9.5], [3.25, 0.9], [0, 0.9]]), M.ceramic));
+  const h = mesh(new THREE.TorusGeometry(2.2, 0.45, 16, 40, Math.PI), M.ceramic, 3.9, 5.0, 0); h.rotation.z = -Math.PI / 2; g.add(h);
+}
+const coffee = mesh(new THREE.CylinderGeometry(1, 1, 0.1, 64), M.coffee, 0, 0, 0, { cast: false }); coffee.visible = false;
+const waterStream = new THREE.MeshStandardMaterial({ color: 0xcfe4f2, roughness: 0.1, transparent: true, opacity: 0.75 });
+const stream = mesh(new THREE.CylinderGeometry(0.13, 0.11, 1, 12), M.coffee, 0, 0, SPOUT_Z, { cast: false, receive: false }); stream.visible = false; machine.add(stream);
+for (const k in VESSELS) { const g = VESSELS[k].group; g.position.set(0, VESSELS[k].base, SPOUT_Z); g.visible = false; machine.add(g); }
+let vessel = 'cup', vesselOn = true, podsMode = false;
+function setLevel(y) {
+  const v = VESSELS[vessel]; coffee.visible = y > v.floor;
+  coffee.position.y = y; const r = v.r(Math.max(y, v.floor)); coffee.scale.set(r, 1, r);
+}
+function showVessel(kind, on = vesselOn, instant = false) {
+  vessel = kind; vesselOn = on; shelfGoal = kind === 'cup' ? 0 : 1;
+  if (instant || reduceMotion) { shelfA = shelfGoal; placeShelf(); }
+  VESSELS[kind].group.add(coffee);
+  document.getElementById('toggleMug').setAttribute('aria-pressed', String(on));
+}
+function vesselVisibility() {   // a cup needs the shelf down, a mug needs it folded away
+  VESSELS.cup.group.visible = vesselOn && !podsMode && vessel === 'cup' && shelfA < 0.02;
+  VESSELS.mug.group.visible = vesselOn && !podsMode && vessel === 'mug' && shelfA > 0.98;
+}
+
+/* ---------- Counter surface ---------- */
+{
+  const s = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.ShadowMaterial({ opacity: 0.5 }));
+  s.rotation.x = -Math.PI / 2; s.position.y = 0.01; s.receiveShadow = true; scene.add(s);
+  const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d');
+  const g = x.createRadialGradient(128, 128, 10, 128, 128, 128); g.addColorStop(0, 'rgba(255,255,255,0.20)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+  x.fillStyle = g; x.fillRect(0, 0, 256, 256);
+  const d = new THREE.Mesh(new THREE.CircleGeometry(70, 64), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false, color: 0x9dbcff }));
+  d.rotation.x = -Math.PI / 2; scene.add(d);
+}
+
+/* ---------- Measurement lines ---------- */
+const dims = new THREE.Group(); dims.visible = false; scene.add(dims);
+const dimLabels = [];
+function addDim(a, b, id) {
+  const tick = 0.7, pts = [a, b];
+  const dir = new THREE.Vector3().subVectors(b, a).normalize();
+  const side = Math.abs(dir.y) > 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0);
+  for (const p of [a, b]) pts.push(p.clone().addScaledVector(side, -tick), p.clone().addScaledVector(side, tick));
+  const line = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0xcfae6a }));
+  dims.add(line);
+  const d = { el: document.getElementById(id), pos: a.clone().add(b).multiplyScalar(0.5), line }; dimLabels.push(d); return d;
+}
+addDim(new THREE.Vector3(-W / 2, 0.3, FRONT + 2.2), new THREE.Vector3(W / 2, 0.3, FRONT + 2.2), 'dimW');
+addDim(new THREE.Vector3(12.5, 0.3, BACK), new THREE.Vector3(12.5, 0.3, FRONT), 'dimD');
+addDim(new THREE.Vector3(12.5, 0, -8.5), new THREE.Vector3(12.5, TOP, -8.5), 'dimH');
+const dimMug = addDim(new THREE.Vector3(-4.6, REST_Y, SPOUT_Z), new THREE.Vector3(-4.6, SPOUT_TIP, SPOUT_Z), 'dimC');
+const dimCup = addDim(new THREE.Vector3(-4.6, SHELF_TOP, SPOUT_Z), new THREE.Vector3(-4.6, SPOUT_TIP, SPOUT_Z), 'dimE');
+
+/* ---------- What the display knows ---------- */
+const STRENGTH = ['very mild', 'mild', 'medium', 'strong', 'very strong'];
+// A pod gives a small cup (about 40 ml) or a cup (about 110 ml). A mug is a pod plus hot water, about 200 ml.
+const SIZES = {
+  small: { label: 'small cup', vessel: 'cup', level: 3.8 },
+  cup:   { label: 'cup',       vessel: 'mug', level: 4.0 },
+  mug:   { label: 'mug',       vessel: 'mug', level: 6.4, topUp: true }
+};
+const PEOPLE = [
+  { name: 'Anna', s: 1, size: 'mug', undo: null },
+  { name: 'Mum', s: 3, size: 'small', undo: null },
+  { name: 'Dad', s: 3, size: 'small', undo: null },
+  { name: 'Guest', s: 2, size: 'cup', undo: null }
+];
+const cupOf = p => `${STRENGTH[p.s]}, ${SIZES[p.size].label}`;
+
+/* ---------- Display screens: black glass, white type, one blue accent ---------- */
+const UI = { bg: '#000000', tile: '#1c1c1e', paper: '#f5f5f7', mute: '#a1a1a6', accent: '#4c8dff', chip: '#f5f5f7', ink: '#000000' };
+const sx = scrCanvas.getContext('2d');
+const SW = scrCanvas.width, SH = scrCanvas.height, PAD = 36, GAP = 24;
+const BIG = 72, TXT = 54, FULL = SW - 2 * PAD;
+let ui = { screen: 'home', who: 0, progress: 0, msg: '', dir: 0, hits: [] };
+const face = `"Instrument Sans", Arial, "Liberation Sans", sans-serif`;
+function rr(x, y, w, h, r) { sx.beginPath(); sx.roundRect(x, y, w, h, r); }
+function fit(str, size, weight, maxW) { sx.font = `${weight} ${size}px ${face}`; while (sx.measureText(str).width > maxW && size > 40) { size -= 2; sx.font = `${weight} ${size}px ${face}`; } return size; }
+function text(str, x, y, size, weight = 500, color = UI.paper, align = 'left') {
+  sx.font = `${weight} ${size}px ${face}`; sx.fillStyle = color; sx.textAlign = align; sx.textBaseline = 'middle'; sx.fillText(str, x, y);
+}
+function lines(str, x, y, size, lh, weight = 500, color = UI.paper) {
+  sx.font = `${weight} ${size}px ${face}`; let line = '';
+  for (const w of str.split(' ')) { if (line && sx.measureText(line + w).width > FULL - 12) { text(line.trim(), x, y, size, weight, color); line = ''; y += lh; } line += w + ' '; }
+  text(line.trim(), x, y, size, weight, color); return y;
+}
+function tile(y, h, title, sub, action) {
+  rr(PAD, y, FULL, h, 44); sx.fillStyle = UI.tile; sx.fill();
+  text(title, SW / 2, y + h / 2 - (sub ? 34 : 0), fit(title, sub ? BIG : 64, 600, FULL - 48), 600, UI.paper, 'center');
+  if (sub) text(sub, SW / 2, y + h / 2 + 46, fit(sub, TXT, 400, FULL - 48), 400, UI.mute, 'center');
+  ui.hits.push({ x: PAD, y, w: FULL, h, action, label: sub ? `${title}: ${sub}` : title });
+}
+function stack(y0, items) {      // equal tiles from y0 to the bottom
+  const h = (SH - y0 - PAD - GAP * (items.length - 1)) / items.length;
+  items.forEach(([title, sub, action], i) => tile(y0 + i * (h + GAP), h, title, sub, action));
+}
+function drawScreen() {
+  ui.hits = [];
+  sx.fillStyle = UI.bg; sx.fillRect(0, 0, SW, SH);
+  const P = PEOPLE[ui.who];
+  if (ui.screen === 'home') {
+    text('Who is having coffee?', PAD + 8, 84, TXT);
+    const y0 = 148, th = (SH - y0 - PAD - 3 * GAP) / 4;
+    PEOPLE.forEach((p, i) => {
+      const y = y0 + i * (th + GAP), cw = p.undo === null ? 0 : 176, ch = 132;
+      rr(PAD, y, FULL, th, 44); sx.fillStyle = UI.tile; sx.fill();
+      const lw = FULL - 60 - (cw ? cw + 20 : 0);
+      text(p.name, PAD + 32, y + th / 2 - 36, fit(p.name, BIG, 600, lw), 600);
+      text(cupOf(p), PAD + 32, y + th / 2 + 44, fit(cupOf(p), TXT, 400, lw), 400, cw ? UI.accent : UI.mute);
+      if (cw) {     // a change was just accepted: the row offers Undo until this person's next cup
+        const cx = PAD + FULL - cw - 22, cy = y + (th - ch) / 2;
+        rr(cx, cy, cw, ch, 36); sx.fillStyle = UI.chip; sx.fill();
+        text('Undo', cx + cw / 2, cy + ch / 2, TXT, 600, UI.ink, 'center');
+        ui.hits.push({ x: cx, y: cy, w: cw, h: ch, action: () => undo(i), label: `Undo the change for ${p.name}` });
+      }
+      ui.hits.push({ x: PAD, y, w: FULL, h: th, action: () => brew(i), label: `${p.name}: ${cupOf(p)}` });
+    });
+  } else if (ui.screen === 'brewing') {
+    text('Pouring for', PAD + 8, 96, TXT, 500, UI.mute);
+    text(P.name, PAD + 4, 250, fit(P.name, 168, 600, FULL), 600);
+    const topping = SIZES[P.size].topUp && ui.progress > 0.55;
+    const sub = topping ? 'adding hot water' : cupOf(P);
+    text(sub, PAD + 8, 390, fit(sub, 60, 400, FULL), 400, UI.accent);
+    rr(PAD, 520, FULL, 28, 14); sx.fillStyle = 'rgba(255,255,255,0.16)'; sx.fill();
+    rr(PAD, 520, Math.max(28, FULL * ui.progress), 28, 14); sx.fillStyle = UI.accent; sx.fill();
+    tile(SH - PAD - 240, 240, 'Stop', '', stopPour);
+  } else if (ui.screen === 'feedback') {
+    text(`How was it, ${P.name}?`, PAD + 8, 84, TXT);
+    const h = 240;
+    [['Too strong', () => propose(-1)], ['Just right', () => say('Saved. Same again next time.')], ['Too weak', () => propose(1)]]
+      .forEach(([l, a], i) => tile(148 + i * (h + GAP), h, l, '', a));
+    text('No answer needed.', SW / 2, 992, TXT, 400, UI.mute, 'center'); text('Skip', SW / 2, 1068, TXT, 600, UI.paper, 'center');
+    ui.hits.push({ x: 0, y: 940, w: SW, h: SH - 940, action: () => go('home'), label: 'Skip' });
+  } else if (ui.screen === 'propose') {
+    text(`Make ${P.name}'s next cup`, PAD + 8, 84, fit(`Make ${P.name}'s next cup`, TXT, 500, FULL), 500, UI.mute);
+    text(ui.dir < 0 ? 'a little milder?' : 'a little stronger?', PAD + 6, 176, BIG, 600);
+    stack(260, [['Yes', 'you can undo it', accept], ['Keep as it is', '', () => go('home')]]);
+  } else if (ui.screen === 'reorder') {
+    text('About 8 pods left', PAD + 8, 84, TXT, 500, UI.mute);
+    const y = lines('Order 2 boxes of your usual pods?', PAD + 6, 176, 62, 78, 600);
+    stack(y + 76, [['Yes', '', () => say('Ordered. You can cancel here for 30 minutes.')], ['Change', '', () => say('Pick other pods or another amount.')], ['Not now', '', () => go('home')]]);
+  } else if (ui.screen === 'water' || ui.screen === 'drawer') {
+    const y = lines(ui.screen === 'water' ? 'Water is low' : 'Pod drawer is full', PAD + 6, 130, 88, 100, 600);
+    lines(ui.screen === 'water' ? 'Fill the tank through the flap, then tap your name.' : 'Empty it, then tap your name.', PAD + 8, y + 130, 58, 78, 400, UI.mute);
+    tile(SH - PAD - 240, 240, 'OK', '', () => go('home'));
+  } else if (ui.screen === 'say') {
+    lines(ui.msg, PAD + 12, 330, 64, 88);
+    ui.hits.push({ x: 0, y: 0, w: SW, h: SH, action: () => go('home'), label: 'Back to the names' });
+  }
+  scrTex.needsUpdate = true; mirror();
+}
+// the same choices as real buttons
+const srBox = document.getElementById('sr');
+function mirror() {
+  if (ui.screen === 'brewing' && srBox.dataset.screen === 'brewing') return;
+  srBox.dataset.screen = ui.screen; srBox.textContent = '';
+  const p = document.createElement('p'); p.setAttribute('aria-live', 'polite');
+  p.textContent = ui.screen === 'say' ? ui.msg : `Machine display: ${ui.screen === 'home' ? 'who is having coffee?' : ui.screen}`; srBox.append(p);
+  for (const h of ui.hits) { const b = document.createElement('button'); b.type = 'button'; b.textContent = `On the display: ${h.label}`; b.addEventListener('click', () => h.action()); srBox.append(b); }
+}
+let timer = 0;
+function go(screen) {
+  clearTimeout(timer); ui.screen = screen; drawScreen();
+  for (const b of document.querySelectorAll('#screens button')) b.setAttribute('aria-pressed', String(b.dataset.screen === screen));
+  if (screen === 'feedback') timer = setTimeout(() => go('home'), 9000);      // optional: goes away by itself
+}
+function say(msg) { ui.msg = msg; go('say'); timer = setTimeout(() => go('home'), 3400); }
+function propose(dir) {
+  const p = PEOPLE[ui.who], next = p.s + dir;
+  if (next < 0 || next >= STRENGTH.length) { say(dir < 0 ? 'That is already the mildest setting.' : 'That is already the strongest setting.'); return; }
+  ui.dir = dir; go('propose');
+}
+function accept() { const p = PEOPLE[ui.who]; p.undo = p.s; p.s += ui.dir; say(`Done. ${p.name} is now ${STRENGTH[p.s]}. Undo is on your name.`); }
+function undo(i) { const p = PEOPLE[i]; p.s = p.undo; p.undo = null; say('Back to how it was.'); }
+
+/* ---------- Pouring ---------- */
+let brewT = -1, brewTo = 0;
+const BREW_S = 4.4;
+function brew(i) {
+  const p = PEOPLE[i], size = SIZES[p.size];
+  ui.who = i; ui.progress = 0; p.undo = null;
+  if (podsMode) lookAt('hero');
+  showVessel(size.vessel, true); setLevel(0); brewTo = size.level; go('brewing');
+  if (reduceMotion) { setLevel(brewTo); timer = setTimeout(() => go('feedback'), 900); return; }
+  brewT = 0;
+}
+function stopPour() { if (brewT < 0) return; brewT = -1; stream.visible = false; say('Stopped.'); }
+function stepBrew(dt) {
+  if (brewT < 0 || podsMode || shelfA !== shelfGoal) return;                   // wait until the shelf is in place
+  brewT += dt; const k = Math.min(brewT / BREW_S, 1), v = VESSELS[vessel], p = PEOPLE[ui.who];
+  ui.progress = k; const level = v.floor + (brewTo - v.floor) * k; setLevel(level);
+  const bottom = v.base + level; stream.visible = true;
+  stream.material = SIZES[p.size].topUp && k > 0.55 ? waterStream : M.coffee;
+  stream.scale.y = SPOUT_TIP - bottom; stream.position.y = (SPOUT_TIP + bottom) / 2;
+  drawScreen();
+  if (k >= 1) { brewT = -1; stream.visible = false; timer = setTimeout(() => go('feedback'), 700); }
+}
+
+/* ---------- Tapping the display and the button in 3D ---------- */
+machine.updateMatrixWorld(true);
+const screenCentre = screen.getWorldPosition(new THREE.Vector3());
+const screenNormal = new THREE.Vector3(0, 0, 1).transformDirection(screen.matrixWorld);
+const ray = new THREE.Raycaster(), ptr = new THREE.Vector2();
+function pick(ev) {
+  const r = canvas.getBoundingClientRect();
+  ptr.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ptr, camera);
+  const first = ray.intersectObjects(machine.children, true).find(h => h.object.visible && h.object.parent.visible && h.object !== stream);
+  if (!first) return null;
+  if (first.object === button || first.point.distanceTo(button.position) < 0.85) return { button: true };
+  const h = ray.intersectObject(screen, false)[0];
+  if (h && h.distance < first.distance + 0.3) return { x: h.uv.x * SW, y: (1 - h.uv.y) * SH };
+  return null;
+}
+let down = null;
+canvas.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY }; canvas.classList.add('grabbing'); stopSpin(); });
+canvas.addEventListener('pointerup', e => {
+  canvas.classList.remove('grabbing');
+  if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6) return;
+  const p = pick(e); if (!p) return;
+  if (p.button) { stopPour(); return; }
+  if (narrow() && camera.position.distanceTo(screenCentre) > 20) { lookAt('display'); return; }   // on a phone, come closer first
+  const hit = ui.hits.find(h => p.x >= h.x && p.x <= h.x + h.w && p.y >= h.y && p.y <= h.y + h.h);
+  if (hit) hit.action();
+});
+canvas.addEventListener('pointercancel', () => canvas.classList.remove('grabbing'));
+canvas.addEventListener('pointermove', e => { if (e.buttons === 0) canvas.classList.toggle('tap', !!pick(e)); });
+canvas.addEventListener('wheel', stopSpin, { passive: true });
+function stopSpin() { controls.autoRotate = false; }
+
+/* ---------- Views ---------- */
+let drawerOut = 0;
+function viewOf(name) {
+  if (name === 'display') {
+    if (narrow()) { const t = screenCentre.clone().add(new THREE.Vector3(0, -3.6, 0)); return { p: t.clone().addScaledVector(screenNormal, 19).toArray(), t: t.toArray() }; }   // display in the upper half, above the controls
+    return { p: [15, 28, 44], t: [3.2, 17.5, 6] };
+  }
+  return { hero: { p: [34, 25, 62], t: [1.4, 11.8, 0.5] }, side: { p: [84, 16, 0.01], t: [0, 12.2, -0.4] },
+    tank: { p: [-44, 30, -56], t: [0, 12, -1] }, pods: { p: [24, 42, 48], t: [1, 10.5, 5] } }[name];
+}
+let fly = null;
+function lookAt(name, instant = reduceMotion) {
+  stopSpin();
+  const v = viewOf(name);
+  for (const b of document.querySelectorAll('#views button')) b.setAttribute('aria-pressed', String(b.dataset.view === name));
+  stage.classList.toggle('close-up', name === 'display' && narrow());
+  const wasPods = podsMode; podsMode = name === 'pods';
+  if (podsMode !== wasPods) {
+    brewT = -1; stream.visible = false;
+    leds.forEach((l, i) => { l.material = podsMode || i < 2 ? ledOn : ledOff; });
+    go(podsMode ? 'drawer' : 'home');
+  }
+  if (instant) { camera.position.set(...v.p); controls.target.set(...v.t); drawerOut = podsMode ? 1 : 0; shelfA = podsMode ? 1 : shelfGoal; placeShelf(); fly = null; return; }
+  fly = { t: 0, p0: camera.position.clone(), t0: controls.target.clone(), p1: new THREE.Vector3(...v.p), t1: new THREE.Vector3(...v.t) };
+}
+document.getElementById('views').addEventListener('click', e => { const b = e.target.closest('button'); if (b) lookAt(b.dataset.view); });
+document.getElementById('screens').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  brewT = -1; stream.visible = false;
+  if (podsMode || !document.querySelector('#views [data-view="display"][aria-pressed="true"]')) lookAt('display');
+  go(b.dataset.screen);
+});
+document.getElementById('toggleDims').addEventListener('click', e => {
+  const on = e.currentTarget.getAttribute('aria-pressed') !== 'true';
+  e.currentTarget.setAttribute('aria-pressed', String(on)); dims.visible = on; stage.classList.toggle('dims-on', on);
+});
+document.getElementById('toggleMug').addEventListener('click', () => {
+  const on = !vesselOn;
+  if (!on && (brewT >= 0 || ui.screen === 'brewing')) { brewT = -1; stream.visible = false; go('home'); }
+  showVessel(vessel, on);
+});
+
+/* ---------- Anonymous counting, same sheet as the start page ---------- */
+const COUNT_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSeOwYpo8mNUuV7g1eulR6b3GMRHXnu-Q5nURwDpQlGpMff7vg/formResponse';
+const linkGroup = (location.hash.match(/^#(p1|p2|p3|test)$/) || [0, 'none'])[1];
+const noCount = /^#at/.test(location.hash);
+function count(event) {
+  if (noCount) return;
+  try { fetch(COUNT_URL, { method: 'POST', mode: 'no-cors', keepalive: true, body: new URLSearchParams({ 'entry.1904125127': 'product_' + event, 'entry.394037258': linkGroup }) }).catch(() => {}); } catch (e) {}
+}
+if (linkGroup !== 'none') for (const a of document.querySelectorAll('a[data-keep]')) a.href += '#' + linkGroup;
+count('open');
+document.getElementById('buy').addEventListener('click', () => { document.getElementById('buyMsg').hidden = false; count('buy_click_99'); });
+document.getElementById('appCard').addEventListener('click', () => count('to_app'));
+
+/* ---------- Putting a pod in: it comes over the top, turns flat and drops into the slot ---------- */
+const podIn = mesh(new THREE.CylinderGeometry(1.85, 1.45, 2.6, 28), M.pod, 9, TOP + 8, SLOT_Z, { cast: false }); podIn.visible = false; machine.add(podIn);
+let podT = -1;
+function insertPod() {
+  if (podT >= 0) return;
+  if (podsMode) lookAt('hero', true);
+  brewT = -1; stream.visible = false; stopSpin(); count('pod_insert');
+  for (const b of document.querySelectorAll('#views button')) b.setAttribute('aria-pressed', 'false');
+  clearTimeout(timer); ui.msg = 'Put a pod in the top.'; ui.screen = 'say'; drawScreen();
+  if (reduceMotion) { say('Pod is in. Tap your name.'); return; }
+  fly = { t: 0, p0: camera.position.clone(), t0: controls.target.clone(), p1: new THREE.Vector3(38, 44, 66), t1: new THREE.Vector3(1.5, 21, 1) };
+  podT = 0; podIn.visible = true;
+}
+function stepPod(dt) {
+  if (podT < 0) return;
+  podT += dt / 4.2; const k = Math.min(podT, 1), e = t => t * t * (3 - 2 * t);
+  const a = e(Math.min(k / 0.38, 1)), b = e(Math.max(0, Math.min((k - 0.45) / 0.45, 1)));
+  podIn.position.set(9 * (1 - a), TOP + 8 - 10.4 * b, SLOT_Z); podIn.rotation.set(Math.PI / 2 * a, 0, 0.7 * (1 - a));
+  if (k >= 1) { podT = -1; podIn.visible = false; say('Pod is in. Tap your name.'); }
+}
+document.getElementById('podBtn').addEventListener('click', insertPod);
+
+/* ---------- Frame loop ---------- */
+function resize() {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  renderer.setSize(w, h, false); camera.aspect = w / h;
+  camera.fov = w / h < 0.8 ? 56 : 30;                                         // pull back on tall phone screens
+  if (w / h > 1.25) camera.setViewOffset(w, h, -w * 0.12, h * 0.05, w, h);    // model sits right of the headline
+  else camera.setViewOffset(w, h, 0, h * 0.07, w, h);                         // lift it clear of the controls
+  camera.updateProjectionMatrix();
+  if (narrow()) document.getElementById('hint').textContent = 'Drag sideways to turn it. Tap the display to come closer.';
+}
+addEventListener('resize', resize); resize();
+{ const v = viewOf('hero'); camera.position.set(...v.p); controls.target.set(...v.t); }
+showVessel('cup', true, true); setLevel(SIZES.small.level);                    // at rest: an espresso, just poured
+
+const clock = new THREE.Clock(), v3 = new THREE.Vector3();
+function frame() {
+  const dt = Math.min(clock.getDelta(), 0.05);
+  if (fly) {
+    fly.t = Math.min(fly.t + dt / 1.1, 1); const k = fly.t * fly.t * (3 - 2 * fly.t);
+    camera.position.lerpVectors(fly.p0, fly.p1, k); controls.target.lerpVectors(fly.t0, fly.t1, k);
+    if (fly.t >= 1) fly = null;
+  }
+  const dGoal = podsMode ? 1 : 0;
+  if (drawerOut !== dGoal) drawerOut = reduceMotion ? dGoal : THREE.MathUtils.clamp(drawerOut + Math.sign(dGoal - drawerOut) * dt / 0.9, 0, 1);
+  drawer.position.z = 7 * drawerOut * drawerOut * (3 - 2 * drawerOut);
+  const sGoal = podsMode ? 1 : shelfGoal;
+  if (shelfA !== sGoal) { shelfA = reduceMotion ? sGoal : THREE.MathUtils.clamp(shelfA + Math.sign(sGoal - shelfA) * dt / 0.8, 0, 1); placeShelf(); }
+  vesselVisibility();
+  dimMug.line.visible = shelfGoal === 1; dimCup.line.visible = shelfGoal === 0;
+  stepPod(dt); stepBrew(dt); controls.update(); renderer.render(scene, camera);
+  if (dims.visible) {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    for (const d of dimLabels) {
+      d.el.style.visibility = d.line.visible ? 'visible' : 'hidden';
+      v3.copy(d.pos).project(camera); d.el.style.transform = `translate(-50%,-50%) translate(${(v3.x * 0.5 + 0.5) * w}px, ${(-v3.y * 0.5 + 0.5) * h}px)`;
+    }
+  }
+  requestAnimationFrame(frame);
+}
+drawMark(); drawScreen();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { drawMark(); drawScreen(); });
+
+/* Still renders for checking: #shot-<view>[-<state>][-dims] */
+{
+  const m = location.hash.match(/^#shot-(\w+?)(?:-(\w+?))?(-dims)?$/);
+  if (m) {
+    controls.autoRotate = false; lookAt(m[1], true);
+    const st = m[2];
+    if (st === 'mug') { showVessel('mug', true, true); setLevel(SIZES.mug.level); }
+    else if (st === 'undo') { PEOPLE[0].undo = 1; PEOPLE[0].s = 0; drawScreen(); }
+    else if (st === 'propose') { ui.dir = -1; go('propose'); }
+    else if (st === 'pour') { ui.progress = 0.7; ui.screen = 'brewing'; drawScreen(); }
+    else if (st && st !== 'home') go(st);
+    if (m[3]) document.getElementById('toggleDims').click();
+  }
+}
+frame();
+</script>
+</body>
+</html>
