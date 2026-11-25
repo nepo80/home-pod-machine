@@ -127,7 +127,7 @@ button.gold, a.gold { background: var(--gold); color: #000; border-color: var(--
 .appcard .sc b { color: var(--paper); font-size: 12px; font-weight: 600; } .appcard .sc i { font-style: normal; background: #1c1c1e; border-radius: 7px; padding: 6px; }
 .appcard .sc u { text-decoration: none; margin-top: auto; background: var(--gold); color: #000; border-radius: 999px; padding: 6px; text-align: center; font-weight: 600; }
 .appcard strong { display: block; font-size: 0.92rem; font-weight: 600; } .appcard small { color: var(--mute); font-size: 0.8rem; }
-@media (max-width: 900px) { .appcard { display: none; } .facts { display: none; } }
+@media (max-width: 900px) { .appcard { display: none; } .facts { display: none; } .words { left: 0; right: 0; top: 0; max-width: none; padding: 14px 16px 34px; background: linear-gradient(to bottom, rgba(0,0,0,.94) 0%, rgba(0,0,0,.8) 68%, rgba(0,0,0,0) 100%); } .words .hint, .words .lede { display: none; } .crumbs { margin-bottom: .45rem; } .note.corner { display: none; } h1 { margin-bottom: .3rem; } .act { margin-top: .6rem; } }
 @media (min-width: 901px) { .applink-small { display: none; } }
 </style>
 </head>
@@ -742,7 +742,7 @@ let podT = -1;
 function insertPod() {
   if (podT >= 0) return;
   if (podsMode) lookAt('hero', true);
-  brewT = -1; stream.visible = false; stopSpin(); count('pod_insert');
+  brewT = -1; stream.visible = false; stopSpin(); stage.classList.remove('close-up'); count('pod_insert');
   for (const b of document.querySelectorAll('#views button')) b.setAttribute('aria-pressed', 'false');
   clearTimeout(timer); ui.msg = 'Put a pod in the top.'; ui.screen = 'say'; drawScreen();
   if (reduceMotion) { say('Pod is in. Tap your name.'); return; }
@@ -762,9 +762,9 @@ document.getElementById('podBtn').addEventListener('click', insertPod);
 function resize() {
   const w = stage.clientWidth, h = stage.clientHeight;
   renderer.setSize(w, h, false); camera.aspect = w / h;
-  camera.fov = w / h < 0.8 ? 56 : 30;                                         // pull back on tall phone screens
+  camera.fov = w / h < 0.8 ? 60 : w / h < 1.25 ? 42 : 30;                                         // pull back on tall phone screens
   if (w / h > 1.25) camera.setViewOffset(w, h, -w * 0.12, h * 0.05, w, h);    // model sits right of the headline
-  else camera.setViewOffset(w, h, 0, h * 0.07, w, h);                         // lift it clear of the controls
+  else camera.setViewOffset(w, h, 0, -h * 0.03, w, h);                         // lift it clear of the controls
   camera.updateProjectionMatrix();
   if (narrow()) document.getElementById('hint').textContent = 'Drag sideways to turn it. Tap the display to come closer.';
 }
