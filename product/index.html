@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Home Pod Machine: the product</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jura:wght@500;600&display=swap">
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500&family=Instrument+Sans:wght@400;500;600&display=swap">
@@ -146,12 +147,23 @@ button:active, .cta:active, .buy:active, .barbuy:active { scale: .965; }
 #dispPanel { position: absolute; left: clamp(16px, 4vw, 48px); bottom: 28px; display: flex; flex-direction: column; gap: 8px; padding: 14px; width: min(270px, calc(100% - 32px)); background: var(--panel); border: 1px solid rgba(255,255,255,.14); border-radius: 18px; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
 #dispPanel[hidden], #podBtn[hidden] { display: none; } #dispPanel b { font-size: .95rem; } #dispBack { background: none; border-color: transparent; color: var(--gold); }
 @media (max-width: 900px) { .words { top: 52px; } .hot span { display: none; } .hot { padding: 6px 10px; } }
+.site { position: relative; z-index: 5; background: #000; border-top: 1px solid rgba(255,255,255,.12); padding: 44px clamp(16px, 4vw, 48px) 36px; color: rgba(255,255,255,.62); font: 400 14px/1.6 Inter, Arial, sans-serif; text-align: left; }
+.site .cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; max-width: 760px; }
+.site b { display: block; color: #fff; font-weight: 600; margin-bottom: 8px; } .site a { display: block; color: inherit; text-decoration: none; padding: 3px 0; transition: color .2s; } .site a:hover { color: #fff; }
+.site p { margin: 28px 0 0; font-size: 12.5px; max-width: none; color: rgba(255,255,255,.5); }
+.bar .brand { font-family: Jura, Inter, Arial, sans-serif; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; font-size: 13.5px; }
+html, body { height: auto !important; } body { overflow: auto !important; } #stage { height: 100vh; height: 100svh; }
+h1 { font-family: Jura, Inter, Arial, sans-serif; font-weight: 500; letter-spacing: .02em; font-size: clamp(1.9rem, 3.2vw, 2.8rem); }
+.focus .words { opacity: 0; } .focus .words a, .focus .words button { pointer-events: none; }
+#zoomBack { position: absolute; left: 50%; bottom: 28px; translate: -50% 0; z-index: 4; } #zoomBack[hidden] { display: none; }
+@media (max-width: 900px) { #dispPanel { bottom: 84px; } }
 </style>
 </head>
 <body>
 <main id="stage">
   <nav class="bar"><a class="brand" href="../" data-keep>Home Pod Machine</a><span class="links"><a class="on" href="./" data-keep>Product</a><a href="../mvp/" data-keep>App</a><a href="../mvp/?tab=order" data-keep>Pods</a></span><span></span></nav>
   <div id="hots"></div>
+  <button type="button" id="zoomBack" hidden>Zoom out</button>
   <div id="dispPanel" hidden><b>The display</b><button type="button" data-s="home">Your name, your cup</button><button type="button" data-s="feedback">One tap of feedback</button><button type="button" data-s="reorder">Asks before it reorders</button><button type="button" id="dispBack">Back</button></div>
   <canvas id="view" aria-label="3D model of a slim black aluminium pod coffee machine. A small touch display floats beside its top right corner and an espresso cup stands under the spout. Drag sideways to turn it."></canvas>
   <div class="shade"></div>
@@ -212,6 +224,7 @@ button:active, .cta:active, .buy:active, .barbuy:active { scale: .965; }
 
   <div id="fallback"><p>This 3D model needs WebGL, which this browser has switched off.</p></div>
 </main>
+<footer class="site"><div class="cols"><div><b>Company</b><a href="#">About</a><a href="#">Contact</a><a href="#">Press</a></div><div><b>Help</b><a href="#">Delivery</a><a href="#">Returns</a><a href="#">FAQ</a></div><div><b>Legal</b><a href="#">Imprint</a><a href="#">Privacy</a><a href="#">Terms</a></div></div><p>Placeholder links and information. Student concept for a course at ESCP Business School. Not a Lavazza product and not affiliated with Lavazza.</p></footer>
 
 <script type="importmap">
 { "imports": {
@@ -254,7 +267,7 @@ scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.03).texture;
 const camera = new THREE.PerspectiveCamera(30, 1, 1, 600);
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true; controls.dampingFactor = 0.07;
-controls.enablePan = false; controls.minDistance = 12; controls.maxDistance = 150;
+controls.enablePan = false; controls.minDistance = 16; controls.maxDistance = 72;
 controls.maxPolarAngle = Math.PI * 0.49;
 controls.autoRotate = !reduceMotion; controls.autoRotateSpeed = 0.55;
 
@@ -692,7 +705,7 @@ canvas.addEventListener('pointerup', e => {
   if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6) return;
   const p = pick(e); if (!p) return;
   if (p.button) { stopPour(); return; }
-  if (narrow() && camera.position.distanceTo(screenCentre) > 20) { lookAt('display'); return; }   // on a phone, come closer first
+  if (narrow() && camera.position.distanceTo(screenCentre) > 20) { HOTS[0].go(); return; }   // on a phone, come closer first
   const hit = ui.hits.find(h => p.x >= h.x && p.x <= h.x + h.w && p.y >= h.y && p.y <= h.y + h.h);
   if (hit) hit.action();
 });
@@ -766,7 +779,7 @@ function insertPod() {
   for (const b of document.querySelectorAll('#views button')) b.setAttribute('aria-pressed', 'false');
   clearTimeout(timer); ui.msg = 'Put a pod in the top.'; ui.screen = 'say'; drawScreen();
   if (reduceMotion) { say('Pod is in. Tap your name.'); return; }
-  fly = { t: 0, p0: camera.position.clone(), t0: controls.target.clone(), p1: new THREE.Vector3(38, 44, 66), t1: new THREE.Vector3(1.5, 21, 1) };
+  fly = { t: 0, p0: camera.position.clone(), t0: controls.target.clone(), p1: new THREE.Vector3(33, 42, 56), t1: new THREE.Vector3(1.5, 21, 1) };
   podT = 0; podIn.visible = true;
 }
 function stepPod(dt) {
@@ -781,11 +794,17 @@ document.getElementById('podBtn').addEventListener('click', insertPod);
 /* ---------- Feature arrows: tap one to see that part ---------- */
 const dispPanel = document.getElementById('dispPanel');
 function panel(on) { dispPanel.hidden = !on; }
+let focus = null;
+const backBtn = document.getElementById('zoomBack');
+function focusOn(name, noLook) { focus = name; hotBox.style.display = 'none'; stage.classList.add('focus'); backBtn.hidden = false; panel(false); if (!noLook) lookAt(name); }
+function unfocus(back) { focus = null; hotBox.style.display = ''; stage.classList.remove('focus'); backBtn.hidden = true; panel(false); if (back || podsMode) lookAt('hero'); }
+backBtn.addEventListener('click', () => unfocus(true));
+addEventListener('keydown', e => { if (e.key === 'Escape' && focus) unfocus(true); });
 const HOTS = [
-  { id: 'display', label: 'Display', sub: 'Tap to see what it does', p: screenCentre.clone(), world: true, dx: 250, dy: -50, go: () => { lookAt('display'); panel(true); } },
-  { id: 'pod', label: 'Pod slot', sub: 'Tap to put a pod in', p: new THREE.Vector3(0, TOP + 0.3, SLOT_Z), dx: -230, dy: -40, go: () => { panel(false); insertPod(); } },
-  { id: 'drawer', label: 'Used pods', sub: 'Tap to open', p: new THREE.Vector3(0, 6.1, COL_Z), dx: -250, dy: 30, go: () => { panel(false); lookAt(podsMode ? 'hero' : 'pods'); } },
-  { id: 'cup', label: 'Cup or mug', sub: 'Both fit', p: new THREE.Vector3(0, TRAY_TOP + 6, TRAY_Z), dx: 270, dy: 40, go: () => { panel(false); lookAt('hero'); document.getElementById('toggleMug').click(); } }
+  { id: 'display', label: 'Display', sub: 'Tap to see what it does', p: screenCentre.clone(), world: true, dx: 250, dy: 0, go: () => { focusOn('display'); if (fly) { fly.p1.copy(screenCentre).addScaledVector(screenNormal, 24); fly.t1.copy(screenCentre); } panel(true); } },
+  { id: 'pod', label: 'Pod slot', sub: 'Tap to put a pod in', p: new THREE.Vector3(0, TOP + 0.3, SLOT_Z), dx: 230, dy: -80, go: () => { focusOn('pod', true); insertPod(); } },
+  { id: 'drawer', label: 'Used pods', sub: 'Tap to open', p: new THREE.Vector3(0, 6.1, COL_Z), dx: -250, dy: 30, go: () => { focusOn('pods'); } },
+  { id: 'cup', label: 'Cup or mug', sub: 'Both fit', p: new THREE.Vector3(0, TRAY_TOP + 6, TRAY_Z), dx: 260, dy: 80, go: () => { showVessel(vessel === 'cup' ? 'mug' : 'cup', true); } }
 ];
 const hotBox = document.getElementById('hots'), SVGNS = 'http://www.w3.org/2000/svg';
 const hotSvg = document.createElementNS(SVGNS, 'svg'); hotBox.appendChild(hotSvg);
@@ -797,11 +816,14 @@ for (const h of HOTS) {
 }
 const hv = new THREE.Vector3();
 function placeHots() {
-  const w = stage.clientWidth, hh = stage.clientHeight, k = w < 700 ? 0.5 : 1;
+  const w = stage.clientWidth, hh = stage.clientHeight, k = w < 700 ? 0.5 : 1, dist = camera.position.distanceTo(controls.target);
+  controls.enableZoom = focus !== null || dist < 69;
+  if (focus && !fly && podT < 0 && dist > 64) unfocus(false);
+  if (focus) return;
   for (const h of HOTS) {
     hv.copy(h.p); if (!h.world) hv.applyMatrix4(machine.matrixWorld); hv.project(camera);
     const x = (hv.x * 0.5 + 0.5) * w, y = (-hv.y * 0.5 + 0.5) * hh;
-    const lx = Math.min(w - 60, Math.max(60, x + h.dx * k)), ly = Math.min(hh - 40, Math.max(96, y + h.dy * k));
+    const lx = Math.min(w - 60, Math.max(60, x + h.dx * k)), ly = Math.min(hh - 40, Math.max(w < 900 ? 250 : 96, y + h.dy * k));
     h.el.style.transform = 'translate(-50%,-50%) translate(' + lx + 'px,' + ly + 'px)';
     const ex = lx + (x > lx ? 1 : -1) * Math.min(Math.abs(x - lx), h.el.offsetWidth / 2 + 4);
     h.line.setAttribute('x1', ex); h.line.setAttribute('y1', ly); h.line.setAttribute('x2', x); h.line.setAttribute('y2', y);
@@ -809,7 +831,7 @@ function placeHots() {
 }
 dispPanel.addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
-  if (b.id === 'dispBack') { panel(false); lookAt('hero'); return; }
+  if (b.id === 'dispBack') { unfocus(true); return; }
   count('display_' + b.dataset.s); document.querySelector('#screens [data-screen="' + b.dataset.s + '"]').click();
 });
 
