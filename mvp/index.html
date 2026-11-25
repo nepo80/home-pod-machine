@@ -360,7 +360,7 @@ document.addEventListener('click', ev => {
   else if (a === 'accept') { p.undo = p.s; p.s += S.dir; count('proposal_accept'); done('learn'); S.msg = `Done. ${p.name} is now ${STRENGTH[p.s]}. Undo is under your name.`; go('say'); timer = setTimeout(afterCup, 2800); }
   else if (a === 'keep') { count('proposal_keep'); done('learn'); S.msg = `Nothing changed. ${p.name} stays ${STRENGTH[p.s]}.`; go('say'); timer = setTimeout(afterCup, 2400); }
   else if (a === 'undo') { const q = S.people[i]; q.s = q.undo; q.undo = null; count('undo'); say(`Back to how it was. ${q.name} is ${STRENGTH[q.s]} again.`); }
-  else if (a === 'add') { S.draft = { step: 0 }; count('add_start'); go('add'); }
+  else if (a === 'add') { S.draft = { step: 0 }; count('add_start'); go('add'); if (b.closest('#phone')) document.getElementById('screen').scrollIntoView({ behavior: 'smooth', block: 'center' }); }
   else if (a === 'name') { S.draft.name = b.dataset.v; S.draft.step = 1; go('add'); }
   else if (a === 'q1') { S.draft.today = +b.dataset.v; S.draft.step = 2; go('add'); }
   else if (a === 'q2') { S.draft.s = +b.dataset.s; S.draft.size = b.dataset.z; S.draft.step = 3; count('match_shown'); go('add'); }
