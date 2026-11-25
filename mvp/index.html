@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home Pod Machine: clickable prototype</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500&family=Inter:opsz,wght@14..32,400..600&display=swap">
+<style>
+:root { --black:#000; --white:#fff; --soft:rgba(255,255,255,.72); --dim:rgba(255,255,255,.5); --gold:#c9a961; --gold-bright:#e8cf96; --tile:#1c1c1e; --tile2:#2a2a2d; --line:rgba(201,169,97,.35);
+  --display:"Bodoni Moda", Georgia, serif; --body:"Inter", Arial, sans-serif; }
+* { box-sizing: border-box; }
+html { background: var(--black); color: var(--white); font: 400 17px/1.5 var(--body); -webkit-font-smoothing: antialiased; }
+body { margin: 0; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--white); outline-offset: 2px; }
+.wrap { max-width: 1240px; margin: 0 auto; padding: 0 clamp(18px, 4vw, 56px); }
+header.top { padding: 22px 0 0; display: flex; justify-content: space-between; gap: 16px; font-size: 14px; color: var(--soft); }
+header.top b { color: var(--white); font-weight: 600; }
+header.top a { color: var(--gold-bright); text-decoration: none; }
+h1 { font: 500 clamp(2rem, 4.4vw, 3.3rem)/1.05 var(--display); margin: 34px 0 10px; text-wrap: balance; }
+h2 { font: 500 clamp(1.6rem, 3vw, 2.3rem)/1.1 var(--display); margin: 0 0 14px; }
+.lede { color: var(--soft); max-width: 46rem; margin: 0 0 30px; }
+
+.stage { display: grid; grid-template-columns: minmax(250px, 1fr) auto auto; gap: clamp(20px, 3vw, 44px); align-items: start; padding-bottom: 56px; }
+.guide h3, .col h3 { font: 600 15px/1.3 var(--body); margin: 0 0 12px; color: var(--gold-bright); }
+.col > p.cap { font-size: 13.5px; color: var(--dim); margin: 10px 0 0; max-width: 320px; }
+ol.tasks { list-style: none; margin: 0; padding: 0; }
+ol.tasks li { position: relative; padding: 12px 0 12px 34px; border-top: 1px solid rgba(255,255,255,.12); color: var(--soft); font-size: 15.5px; }
+ol.tasks li:last-child { border-bottom: 1px solid rgba(255,255,255,.12); }
+ol.tasks li::before { content: ""; position: absolute; left: 2px; top: 15px; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--gold); }
+ol.tasks li.done { color: var(--white); }
+ol.tasks li.done::before { background: var(--gold); }
+ol.tasks li.done::after { content: ""; position: absolute; left: 8px; top: 19px; width: 5px; height: 9px; border: solid #000; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+ol.tasks li b { display: block; color: var(--white); font-weight: 600; }
+.ask { margin-top: 22px; padding: 18px; border: 1px solid var(--line); border-radius: 14px; }
+.ask p { margin: 0 0 12px; font-weight: 600; }
+.ask button { display: block; width: 100%; text-align: left; background: var(--tile); border: 0; border-radius: 10px; padding: 11px 14px; margin-top: 8px; font-size: 15px; }
+.ask button:hover { background: var(--tile2); }
+.ask .thanks { color: var(--gold-bright); font-weight: 600; margin: 0; }
+.reset { margin-top: 18px; background: none; border: 0; padding: 0; color: var(--dim); font-size: 14px; text-decoration: underline; }
+
+/* machine display */
+.machine { width: 318px; }
+.bezel { background: #0b0b0c; border: 1px solid #2c2c2e; border-radius: 26px; padding: 12px; box-shadow: 0 0 80px rgba(201,169,97,.16); }
+.screen { background: #000; border-radius: 16px; height: 540px; padding: 18px 16px 14px; display: flex; flex-direction: column; overflow: hidden; }
+.screen .hd { font-size: 13px; color: var(--dim); display: flex; justify-content: space-between; margin-bottom: 12px; }
+.screen h4 { font: 600 20px/1.2 var(--body); margin: 0 0 11px; letter-spacing: -.01em; }
+.screen p { margin: 0 0 12px; color: var(--soft); font-size: 15px; }
+.tiles { display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0; overflow-y: auto; }
+.tile { background: var(--tile); border: 0; border-radius: 13px; padding: 9px 13px; text-align: left; display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; }
+.tile:hover { background: var(--tile2); }
+.tile b { font-weight: 600; font-size: 16.5px; display: block; }
+.tile span { font-size: 13px; color: var(--soft); display: block; }
+.tile i { font-style: normal; font-size: 13px; color: var(--gold-bright); white-space: nowrap; }
+.tile.gold { background: var(--gold); color: #000; } .tile.gold span { color: rgba(0,0,0,.72); } .tile.gold:hover { background: #d8bd7c; }
+.tile.ghost { background: none; border: 1px dashed rgba(255,255,255,.3); }
+.row { display: flex; gap: 8px; }
+.chip { background: var(--tile); border: 0; border-radius: 999px; padding: 9px 14px; font-size: 14.5px; } .chip:hover { background: var(--tile2); }
+.link { background: none; border: 0; color: var(--dim); font-size: 14px; padding: 8px 0 0; text-align: left; text-decoration: underline; }
+.ft { margin-top: 10px; font-size: 13px; color: var(--dim); display: flex; justify-content: space-between; }
+.ft b { color: var(--gold-bright); font-weight: 600; }
+.pour { flex: 1; display: grid; place-items: center; }
+.cup { width: 96px; height: 96px; border-radius: 0 0 44px 44px; border: 3px solid var(--white); border-top-width: 0; position: relative; overflow: hidden; }
+.cup::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: linear-gradient(#b98b55, #5b3a1e); animation: fill 2.4s ease-in forwards; }
+@keyframes fill { to { height: 78%; } }
+.undo { background: none; border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; font-size: 13px; color: var(--gold-bright); }
+
+/* phone */
+.phone { width: 270px; }
+.pbezel { background: #0b0b0c; border: 1px solid #2c2c2e; border-radius: 34px; padding: 10px; }
+.pscreen { background: #111113; border-radius: 26px; height: 540px; padding: 16px 14px; display: flex; flex-direction: column; overflow: hidden; }
+.tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+.tabs button { flex: 1; background: none; border: 0; border-bottom: 2px solid transparent; padding: 6px 0; font-size: 14px; color: var(--dim); }
+.tabs button[aria-selected="true"] { color: var(--white); border-color: var(--gold); }
+.card { background: var(--tile); border-radius: 14px; padding: 13px; margin-bottom: 10px; font-size: 14.5px; color: var(--soft); }
+.card b { color: var(--white); display: block; margin-bottom: 4px; font-size: 15.5px; }
+.card .row { margin-top: 10px; flex-wrap: wrap; }
+.card .chip { background: var(--tile2); } .card .chip.gold { background: var(--gold); color: #000; }
+.pscroll { overflow-y: auto; flex: 1; min-height: 0; }
+.stepper { display: inline-flex; align-items: center; gap: 10px; }
+.stepper button { width: 30px; height: 30px; border-radius: 50%; border: 0; background: var(--tile2); font-size: 18px; line-height: 1; }
+
+/* setting */
+.where { border-top: 1px solid var(--line); padding: 54px 0 30px; }
+.where .grid { display: grid; grid-template-columns: 1.55fr 1fr; gap: clamp(20px, 4vw, 56px); align-items: center; }
+.where svg { width: 100%; height: auto; display: block; border-radius: 14px; }
+.where ul { list-style: none; padding: 0; margin: 0; }
+.where li { padding: 12px 0; border-top: 1px solid rgba(255,255,255,.12); color: var(--soft); }
+.where li b { color: var(--white); font-weight: 600; display: block; }
+footer { padding: 26px 0 44px; font-size: 13.5px; color: var(--dim); }
+@media (max-width: 980px) {
+  .stage { grid-template-columns: 1fr; justify-items: center; }
+  .guide { width: 100%; max-width: 420px; order: 2; } .machine { order: 1; } .phone { order: 3; }
+  .where .grid { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { .cup::after { animation-duration: .01s; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top"><span><b>Home Pod Machine</b> · clickable prototype</span><a href="../">Back to the concept page</a></header>
+<h1>Try the machine before it exists.</h1>
+<p class="lede">This is the screen on the machine, with the optional phone app next to it. Tap around as if it stood in your kitchen. The household, the pods and the stock are examples. Nothing is ordered and nothing is saved.</p>
+
+<main class="stage">
+  <section class="guide" aria-label="Things to try">
+    <h3>Four things to try</h3>
+    <ol class="tasks" id="tasks">
+      <li data-t="brew"><b>Make your own cup with one touch</b>Tap a name on the machine.</li>
+      <li data-t="learn"><b>Tell it how the cup was</b>Then accept its suggestion, or keep things as they are.</li>
+      <li data-t="match"><b>Add a person and let it pick a pod</b>Use “Add a person” on the machine.</li>
+      <li data-t="order"><b>Answer the reorder question</b>It appears when pods run low.</li>
+    </ol>
+    <div class="ask" id="ask" hidden></div>
+    <button class="reset" data-act="reset">Start again</button>
+  </section>
+
+  <section class="col machine" aria-label="Machine display">
+    <h3>On the machine</h3>
+    <div class="bezel"><div class="screen" id="screen" aria-live="polite"></div></div>
+    <p class="cap">The display sits on the side of the machine. Everything here works without the app.</p>
+  </section>
+
+  <section class="col phone" aria-label="Optional phone app">
+    <h3>Optional phone app</h3>
+    <div class="pbezel"><div class="pscreen" id="phone"></div></div>
+    <p class="cap">Only for those who want it: approve orders, edit profiles, see or delete data.</p>
+  </section>
+</main>
+
+<section class="where" id="where">
+  <h2>Where it lives</h2>
+  <div class="grid">
+    <svg viewBox="0 0 760 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="sc-t sc-d" font-family="Inter, Arial, sans-serif">
+<title id="sc-t">The machine on a kitchen worktop, drawn to scale</title>
+<desc id="sc-d">Front view of a small kitchen. The machine stands on the worktop between a kettle and a jar of instant coffee, under a wall cabinet. A person reaches for the display on its side. The machine is 26 cm tall and 17 cm wide including the display. A small plan shows its 17 by 29 cm footprint on a 60 cm deep worktop.</desc>
+<rect width="760" height="470" fill="#ebe6dc"/>
+<!-- tiles -->
+<g stroke="#ddd6c8" stroke-width="1"><path d="M0 190H760M0 230H760M0 270H760M0 310H760"/><path d="M60 150V330M140 150V330M220 150V330M300 150V330M380 150V330M460 150V330M540 150V330M620 150V330M700 150V330"/></g>
+<!-- wall cabinets, 50 cm above the worktop -->
+<rect x="0" y="0" width="760" height="150" fill="#f6f3ec"/><g stroke="#d8d1c2" stroke-width="1.5"><path d="M0 150H760M190 0V150M380 0V150M570 0V150"/></g>
+<g fill="#b9b0a0"><rect x="170" y="118" width="6" height="22" rx="3"/><rect x="204" y="118" width="6" height="22" rx="3"/><rect x="550" y="118" width="6" height="22" rx="3"/><rect x="584" y="118" width="6" height="22" rx="3"/></g>
+<!-- clock: before work -->
+<circle cx="70" cy="222" r="20" fill="#fbfaf6" stroke="#8d867a" stroke-width="2"/><path d="M70 222L62 214M70 222L81 230" stroke="#3a3a3d" stroke-width="2.4" stroke-linecap="round"/>
+<text x="70" y="260" text-anchor="middle" font-size="12" fill="#5d574d">7:40, before work</text>
+<!-- base cabinets and worktop (90 cm high, cut off below) -->
+<rect x="0" y="344" width="760" height="126" fill="#d9d2c4"/><g stroke="#c5bdad" stroke-width="1.5"><path d="M190 344V470M380 344V470M570 344V470"/></g>
+<rect x="0" y="330" width="760" height="14" fill="#3a3a3d"/>
+<!-- kettle, 22 cm -->
+<g transform="translate(168 251)"><path d="M8 79Q0 40 12 6Q29 -4 46 6Q58 40 50 79Z" fill="#c9c4bb" stroke="#8d867a" stroke-width="1.5"/><rect x="18" y="-6" width="22" height="10" rx="4" fill="#3a3a3d"/><path d="M50 18Q74 22 70 52Q68 66 52 66" fill="none" stroke="#3a3a3d" stroke-width="6" stroke-linecap="round"/><path d="M10 14L-6 8L-2 20Z" fill="#c9c4bb" stroke="#8d867a" stroke-width="1.5"/></g>
+
+<!-- machine: 12 cm body (43 px), 26 cm tall (94 px), display adds 5 cm (18 px) -->
+<g transform="translate(322 236)">
+  <rect x="0" y="0" width="43" height="94" rx="7" fill="#111113"/><rect x="0.75" y="0.75" width="41.5" height="92.5" rx="6.5" fill="none" stroke="#c9a961" stroke-width="1"/>
+  <rect x="6" y="40" width="31" height="50" rx="4" fill="#000"/><rect x="17" y="40" width="9" height="9" rx="2" fill="#2a2a2d"/>
+  <rect x="6" y="88" width="31" height="3" fill="#2a2a2d"/>
+  <!-- mug under the spout, 9.5 cm -->
+  <path d="M9 56H33V84Q33 90 27 90H15Q9 90 9 84Z" fill="#fbfaf6"/><path d="M33 62Q41 62 41 70Q41 78 33 78" fill="none" stroke="#fbfaf6" stroke-width="3"/>
+  <!-- display on the side -->
+  <rect x="43" y="14" width="18" height="30" rx="3" fill="#111113" stroke="#c9a961" stroke-width="1"/><rect x="46" y="17" width="12" height="24" rx="1.5" fill="#e8cf96"/>
+  <g fill="#111113"><rect x="48" y="20" width="8" height="3" rx="1"/><rect x="48" y="25" width="8" height="3" rx="1"/><rect x="48" y="30" width="8" height="3" rx="1"/></g>
+</g>
+<!-- jar of instant coffee, 13 cm -->
+<g transform="translate(418 283)"><rect x="0" y="6" width="27" height="41" rx="4" fill="#7a5a3c" opacity=".55"/><rect x="-1" y="0" width="29" height="8" rx="2" fill="#a13c2e" opacity=".7"/><rect x="3" y="18" width="21" height="16" fill="#fbfaf6" opacity=".8"/></g>
+<!-- person, seen from behind, reaching for the display -->
+<g fill="#857c6f">
+  <ellipse cx="560" cy="92" rx="29" ry="36"/><path d="M531 84Q532 44 560 44Q588 44 589 84Q575 70 560 70Q545 70 531 84Z" fill="#4d473f"/>
+  <rect x="548" y="122" width="24" height="22" />
+  <path d="M484 470V196Q484 150 530 142H590Q636 150 636 196V470Z"/>
+  <path d="M492 190Q470 232 428 258L392 262L390 274L432 276Q490 252 520 214Z"/>
+</g>
+<!-- dimensions -->
+<g stroke="#240085" stroke-width="1.3" fill="none"><path d="M306 236V330M301 236H311M301 330H311"/><path d="M322 222H383M322 217V227M383 217V227"/><path d="M700 150V330M695 150H705M695 330H705"/></g>
+<g font-size="13" font-weight="600" fill="#240085"><text x="298" y="288" text-anchor="end">26 cm</text><text x="352" y="212" text-anchor="middle">17 cm</text><text x="692" y="244" text-anchor="end">50 cm to</text><text x="692" y="260" text-anchor="end">the cabinet</text></g>
+<g font-size="12" fill="#5d574d"><text x="197" y="364" text-anchor="middle">kettle, 22 cm</text><text x="352" y="364" text-anchor="middle">the machine</text><text x="432" y="364" text-anchor="middle">instant jar</text></g>
+<!-- plan view -->
+<g transform="translate(18 16)"><rect width="176" height="122" rx="8" fill="#fbfaf6" stroke="#d8d1c2"/>
+  <text x="12" y="20" font-size="12" font-weight="600" fill="#2a2a2a">From above</text>
+  <rect x="12" y="28" width="152" height="80" fill="#3a3a3d"/><text x="88" y="118" font-size="10.5" text-anchor="middle" fill="#5d574d">worktop, 60 cm deep</text>
+  <circle cx="30" cy="58" r="11" fill="#c9c4bb"/><rect x="50" y="34" width="23" height="39" rx="3" fill="#111113" stroke="#c9a961"/><rect x="73" y="56" width="7" height="12" rx="1.5" fill="#e8cf96"/>
+  <text x="90" y="52" font-size="11" font-weight="600" fill="#fbfaf6">17 × 29 cm</text><text x="90" y="66" font-size="10.5" fill="#d8d1c2">footprint</text>
+</g>
+</svg>
+
+    <ul>
+      <li><b>On the worktop, next to the kettle</b>It takes the spot where the jar of instant coffee stands today.</li>
+      <li><b>12 cm wide, 17 cm with the display</b>Narrower than a sheet of A4 paper.</li>
+      <li><b>26 cm tall, 29 cm deep</b>About the height of a kettle. It fits under a wall cabinet.</li>
+      <li><b>Used before work</b>Each person taps their own name. A mug fits under the spout.</li>
+    </ul>
+  </div>
+</section>
+<footer>Student concept for a course at ESCP Business School. Not a Lavazza product and not affiliated with Lavazza. Pod names come from Lavazza’s current range; descriptions, stock and orders are examples. Taps on this page are counted anonymously for the course; no personal data is collected.</footer>
+</div>
+
+<script>
+/* ---------- anonymous counting (same sheet as the concept page) ---------- */
+const COUNT_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSeOwYpo8mNUuV7g1eulR6b3GMRHXnu-Q5nURwDpQlGpMff7vg/formResponse';
+const linkGroup = (location.hash.match(/^#(p1|p2|p3|test)$/) || [0, 'none'])[1];
+const noCount = /^#at/.test(location.hash) || /nocount/.test(location.search);
+function count(event) {
+  if (noCount) return;
+  try { fetch(COUNT_URL, { method: 'POST', mode: 'no-cors', keepalive: true, body: new URLSearchParams({ 'entry.1904125127': 'mvp_' + event, 'entry.394037258': linkGroup }) }).catch(() => {}); } catch (e) {}
+}
+
+/* ---------- example content: nothing is stored ---------- */
+const STRENGTH = ['very mild', 'mild', 'medium', 'strong', 'very strong'];
+const SIZE = { small: 'small cup', cup: 'cup', mug: 'mug' };
+const PODS = [
+  { id: 'rossa', name: 'Qualità Rossa', note: 'balanced, a little chocolate', fit: [1, 2, 3] },
+  { id: 'passionale', name: 'Passionale', note: 'dark and strong', fit: [3, 4] },
+  { id: 'delizioso', name: 'Deliziosamente', note: 'soft and sweet', fit: [0, 1, 2] },
+  { id: 'dolce', name: 'Lungo Dolce', note: 'light, made for a long cup', fit: [0, 1] }
+];
+const BOX = 16, BOX_PRICE = 6.45, PER_DAY = 3;
+const pod = id => PODS.find(p => p.id === id);
+const fresh = () => ({
+  people: [
+    { name: 'Anna', s: 1, size: 'mug', pod: 'delizioso', undo: null },
+    { name: 'Mum', s: 3, size: 'small', pod: 'passionale', undo: null },
+    { name: 'Dad', s: 3, size: 'small', pod: 'passionale', undo: null }
+  ],
+  left: 9, cups: 23, taps: 6, asked: false, order: null, askAt: 7,
+  view: 'home', who: 0, dir: 0, msg: '', draft: null, tab: 'order', change: { pod: 'rossa', boxes: 2 }, done: {}, answered: false
+});
+let S = fresh();
+let timer = 0;
+
+const cupOf = p => `${STRENGTH[p.s]} · ${SIZE[p.size]} · ${pod(p.pod).name}`;
+const money = v => '£' + v.toFixed(2);
+function runOut() { const d = new Date(); d.setDate(d.getDate() + Math.ceil(S.left / PER_DAY)); return d.toLocaleDateString('en-GB', { weekday: 'long' }); }
+function arrive() { const d = new Date(); d.setDate(d.getDate() + 2); return d.toLocaleDateString('en-GB', { weekday: 'long' }); }
+function done(t) { if (S.done[t]) return; S.done[t] = true; count('task_' + t); if (Object.keys(S.done).length === 4) count('all_tasks_done'); }
+
+/* ---------- machine display ---------- */
+function screen() {
+  const p = S.people[S.who], hd = `<div class="hd"><span>Home Pod Machine</span><span>${S.left} pods · water ok</span></div>`;
+  if (S.view === 'home') return hd + `<h4>Good morning. Who is it for?</h4><div class="tiles">` +
+    S.people.map((q, i) => `<button class="tile" data-act="brew" data-i="${i}"><span><b>${q.name}</b><span>${cupOf(q)}</span></span>${q.undo !== null ? `<i>changed</i>` : ''}</button>` +
+      (q.undo !== null ? `<div class="row" style="justify-content:flex-end"><button class="undo" data-act="undo" data-i="${i}">Undo ${q.name}’s change</button></div>` : '')).join('') +
+    `<button class="tile ghost" data-act="guest"><span><b>Guest</b><span>a standard cup, nothing is saved</span></span></button>` +
+    `<button class="tile ghost" data-act="add"><span><b>Add a person</b><span>two questions, then it suggests a pod</span></span></button></div>` +
+    (S.order ? `<div class="ft"><span>${S.order.boxes} ${S.order.boxes > 1 ? 'boxes' : 'box'} of ${pod(S.order.pod).name} on the way</span></div>` :
+      S.left <= S.askAt ? `<div class="ft"><button class="undo" data-act="showorder">Pods run low: see the question</button></div>` : `<div class="ft"><span>Pods last until <b>${runOut()}</b></span></div>`);
+  if (S.view === 'pour') return hd + `<h4>${S.guest ? 'A cup for your guest' : p.name + '’s cup'}</h4><p>${S.guest ? 'medium · cup' : cupOf(p)}</p><div class="pour"><div class="cup"></div></div><p>Brewing…</p>`;
+  if (S.view === 'fb') return hd + `<h4>How was it, ${p.name}?</h4><p>One tap is enough. You can also skip this.</p><div class="tiles">
+    <button class="tile" data-act="fb" data-d="-1"><b>Too strong</b></button><button class="tile" data-act="fb" data-d="0"><b>Just right</b></button><button class="tile" data-act="fb" data-d="1"><b>Too weak</b></button></div>
+    <button class="link" data-act="home">Skip</button>`;
+  if (S.view === 'prop') return hd + `<h4>${S.dir < 0 ? 'A bit milder next time?' : 'A bit stronger next time?'}</h4>
+    <p>${p.name} would go from <b style="color:#fff">${STRENGTH[p.s]}</b> to <b style="color:#fff">${STRENGTH[p.s + S.dir]}</b>. Nothing changes unless you say so.</p>
+    <div class="tiles"><button class="tile gold" data-act="accept"><span><b>${S.dir < 0 ? 'Yes, milder' : 'Yes, stronger'}</b><span>you can undo it on your name</span></span></button>
+    <button class="tile" data-act="keep"><b>Keep it as it is</b></button></div>`;
+  if (S.view === 'say') return hd + `<div class="pour"><h4 style="text-align:center">${S.msg}</h4></div><button class="link" data-act="home">Continue</button>`;
+  if (S.view === 'add') {
+    const d = S.draft;
+    if (d.step === 0) return hd + `<h4>Who is new?</h4><p>Pick an example name.</p><div class="tiles">${['Sam', 'Noor', 'Alex', 'Jo'].map(n => `<button class="tile" data-act="name" data-v="${n}"><b>${n}</b></button>`).join('')}</div><button class="link" data-act="home">Cancel</button>`;
+    if (d.step === 1) return hd + `<h4>What do you drink at home today, ${d.name}?</h4><div class="tiles">${['Instant coffee', 'Filter coffee', 'Coffee from a café', 'No coffee at home yet'].map((n, i) => `<button class="tile" data-act="q1" data-v="${i}"><b>${n}</b></button>`).join('')}</div>`;
+    if (d.step === 2) return hd + `<h4>Which cup would you take?</h4><p>No settings to learn. Just pick one.</p><div class="tiles">
+      <button class="tile" data-act="q2" data-s="3" data-z="small"><span><b>Small and strong</b><span>like an espresso</span></span></button>
+      <button class="tile" data-act="q2" data-s="2" data-z="cup"><span><b>A medium cup</b><span>neither strong nor mild</span></span></button>
+      <button class="tile" data-act="q2" data-s="1" data-z="mug"><span><b>A big, mild mug</b><span>like a long instant coffee</span></span></button></div>`;
+    const fits = PODS.filter(x => x.fit.includes(d.s)).slice(0, 3);
+    return hd + `<h4>Pods that fit ${d.name}</h4><p>Chosen from your two answers, never by price. Each costs ${money(BOX_PRICE / BOX)} a cup.</p><div class="tiles">${fits.map(x =>
+      `<button class="tile" data-act="pick" data-v="${x.id}"><span><b>${x.name}</b><span>${x.note}. Fits a ${STRENGTH[d.s]} ${SIZE[d.size]}.</span></span></button>`).join('')}</div>`;
+  }
+  if (S.view === 'order') return hd + orderText(true);
+  return '';
+}
+function orderText(machine) {
+  const c = S.change, total = money(c.boxes * BOX_PRICE);
+  if (S.orderView === 'change') return `<h4>Change the order</h4><div class="tiles">${PODS.map(x => `<button class="tile" data-act="setpod" data-v="${x.id}"><span><b>${x.name}</b><span>${x.note}</span></span>${c.pod === x.id ? '<i>chosen</i>' : ''}</button>`).join('')}
+    <div class="row" style="align-items:center;justify-content:space-between;padding:6px 2px"><span>Boxes of ${BOX}</span><span class="stepper"><button data-act="boxes" data-d="-1" aria-label="One box fewer">−</button><b>${c.boxes}</b><button data-act="boxes" data-d="1" aria-label="One box more">+</button></span></div>
+    <button class="tile gold" data-act="order" data-how="change"><b>Order for ${total}</b></button></div><button class="link" data-act="orderback">Back</button>`;
+  return `<h4>Pods run out on ${runOut()}.</h4><p>${S.left} left, at about ${PER_DAY} cups a day. Order ${c.boxes} boxes of ${pod(c.pod).name} for ${total}?</p>
+    <div class="tiles"><button class="tile gold" data-act="order" data-how="yes"><b>Yes</b></button><button class="tile" data-act="orderchange"><b>Change</b></button>
+    <button class="tile" data-act="notnow"><span><b>Not now</b><span>nothing is ordered</span></span></button></div><p style="margin:10px 0 0;font-size:13px">No subscription. Nothing is ordered without your yes.</p>`;
+}
+
+/* ---------- phone ---------- */
+function phone() {
+  const tabs = `<div class="tabs" role="tablist">${[['order', 'Orders'], ['people', 'Profiles'], ['data', 'My data']].map(([k, l]) => `<button role="tab" aria-selected="${S.tab === k}" data-act="tab" data-v="${k}">${l}</button>`).join('')}</div>`;
+  let body = '';
+  if (S.tab === 'order') body = S.order ? `<div class="card"><b>Order confirmed</b>${S.order.boxes} ${S.order.boxes > 1 ? 'boxes' : 'box'} of ${pod(S.order.pod).name}, ${money(S.order.boxes * BOX_PRICE)}. Arrives ${arrive()}.<br><br>Prototype: nothing was ordered or charged.</div>` :
+    S.left <= S.askAt && !S.later ? `<div class="card"><b>Pods run out on ${runOut()}</b>${S.left} left. Order ${S.change.boxes} boxes of ${pod(S.change.pod).name} for ${money(S.change.boxes * BOX_PRICE)}?
+      <div class="row"><button class="chip gold" data-act="order" data-how="yes" data-from="phone">Yes</button><button class="chip" data-act="orderchange">Change</button><button class="chip" data-act="notnow" data-from="phone">Not now</button></div></div>` :
+    `<div class="card"><b>Nothing to do</b>${S.later ? 'You said “not now”. The machine asks again at ' + S.askAt + ' pods.' : 'Pods last until ' + runOut() + '. The machine asks before it orders anything.'}</div>`;
+  if (S.tab === 'people') body = S.people.map((q, i) => `<div class="card"><b>${q.name}</b>${cupOf(q)}<div class="row" style="align-items:center;justify-content:space-between"><span>Strength</span><span class="stepper"><button data-act="edit" data-i="${i}" data-d="-1" aria-label="Milder">−</button><button data-act="edit" data-i="${i}" data-d="1" aria-label="Stronger">+</button></span></div></div>`).join('');
+  if (S.tab === 'data') body = `<div class="card"><b>What the machine keeps</b>${S.cups} cups counted by profile<br>${S.taps} feedback taps<br>pods delivered and used<br><br>Nothing else. No voice, no location.</div>
+    <div class="card"><b>Your choice</b>Delete everything and the machine starts learning again.<div class="row"><button class="chip" data-act="wipe">Delete my data</button></div></div>`;
+  return tabs + `<div class="pscroll">${body}</div>`;
+}
+
+/* ---------- final question ---------- */
+function ask() {
+  const el = document.getElementById('ask');
+  if (Object.keys(S.done).length < 4) { el.hidden = true; return; }
+  el.hidden = false;
+  el.innerHTML = S.answered ? `<p class="thanks">Thank you. That is all.</p>` : `<p>One question: if you could keep only one of these, which would it be?</p>` +
+    [['own_cup', 'My own cup with one touch'], ['learning', 'It adjusts from my feedback'], ['pod_match', 'It picks pods that fit me'], ['ask_reorder', 'It asks before it reorders'], ['none', 'None of them']].map(([k, l]) => `<button data-act="keepone" data-v="${k}">${l}</button>`).join('');
+}
+function render() {
+  document.getElementById('screen').innerHTML = screen();
+  document.getElementById('phone').innerHTML = phone();
+  document.querySelectorAll('#tasks li').forEach(li => li.classList.toggle('done', !!S.done[li.dataset.t]));
+  ask();
+}
+function go(v) { clearTimeout(timer); S.view = v; render(); }
+function say(msg, next = 'home', ms = 2600) { S.msg = msg; go('say'); timer = setTimeout(() => go(next), ms); }
+function afterCup() { if (S.left <= S.askAt && !S.asked && !S.order) { S.asked = true; S.later = false; S.orderView = 'ask'; count('reorder_shown'); go('order'); } else go('home'); }
+
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('[data-act]'); if (!b) return;
+  const a = b.dataset.act, i = +b.dataset.i, p = S.people[S.who];
+  if (a === 'reset') { clearTimeout(timer); S = fresh(); count('reset'); render(); }
+  else if (a === 'home') afterCup();
+  else if (a === 'brew' || a === 'guest') {
+    S.guest = a === 'guest'; if (!S.guest) S.who = i; S.left = Math.max(0, S.left - 1); S.cups++; count(S.guest ? 'brew_guest' : 'brew'); if (!S.guest) done('brew');
+    go('pour'); timer = setTimeout(() => S.guest ? afterCup() : go('fb'), 2600);
+  }
+  else if (a === 'fb') {
+    const d = +b.dataset.d; S.taps++; count(['fb_too_strong', 'fb_just_right', 'fb_too_weak'][d + 1]);
+    if (d === 0) { done('learn'); S.msg = `Saved. ${p.name} stays ${STRENGTH[p.s]}.`; go('say'); timer = setTimeout(afterCup, 2200); }
+    else if (p.s + d < 0 || p.s + d > 4) { done('learn'); S.msg = `${p.name} is already at ${STRENGTH[p.s]}. A different pod would help; see “Add a person” for the pod match.`; go('say'); timer = setTimeout(afterCup, 3600); }
+    else { S.dir = d; go('prop'); }
+  }
+  else if (a === 'accept') { p.undo = p.s; p.s += S.dir; count('proposal_accept'); done('learn'); S.msg = `Done. ${p.name} is now ${STRENGTH[p.s]}. Undo is under your name.`; go('say'); timer = setTimeout(afterCup, 2800); }
+  else if (a === 'keep') { count('proposal_keep'); done('learn'); S.msg = `Nothing changed. ${p.name} stays ${STRENGTH[p.s]}.`; go('say'); timer = setTimeout(afterCup, 2400); }
+  else if (a === 'undo') { const q = S.people[i]; q.s = q.undo; q.undo = null; count('undo'); say(`Back to how it was. ${q.name} is ${STRENGTH[q.s]} again.`); }
+  else if (a === 'add') { S.draft = { step: 0 }; count('add_start'); go('add'); }
+  else if (a === 'name') { S.draft.name = b.dataset.v; S.draft.step = 1; go('add'); }
+  else if (a === 'q1') { S.draft.today = +b.dataset.v; S.draft.step = 2; go('add'); }
+  else if (a === 'q2') { S.draft.s = +b.dataset.s; S.draft.size = b.dataset.z; S.draft.step = 3; count('match_shown'); go('add'); }
+  else if (a === 'pick') { const d = S.draft; S.people.push({ name: d.name, s: d.s, size: d.size, pod: b.dataset.v, undo: null }); S.who = S.people.length - 1; count('match_pick_' + b.dataset.v); done('match'); say(`${d.name} is set up: ${cupOf(S.people[S.who])}. Tap the name to brew.`, 'home', 3200); }
+  else if (a === 'showorder') { S.orderView = 'ask'; S.later = false; go('order'); }
+  else if (a === 'orderchange') { S.orderView = 'change'; S.tab = 'order'; count('reorder_change'); go('order'); }
+  else if (a === 'orderback') { S.orderView = 'ask'; go('order'); }
+  else if (a === 'setpod') { S.change.pod = b.dataset.v; render(); }
+  else if (a === 'boxes') { S.change.boxes = Math.min(6, Math.max(1, S.change.boxes + +b.dataset.d)); render(); }
+  else if (a === 'order') { S.order = { ...S.change }; S.later = false; count('reorder_' + (b.dataset.how === 'change' ? 'yes_after_change' : 'yes') + (b.dataset.from ? '_phone' : '')); done('order'); say(`Ordered. ${S.order.boxes} ${S.order.boxes > 1 ? 'boxes' : 'box'} of ${pod(S.order.pod).name} arrive ${arrive()}. Prototype: nothing is ordered or charged.`, 'home', 3800); }
+  else if (a === 'notnow') { S.later = true; S.askAt = 4; S.asked = false; count('reorder_not_now' + (b.dataset.from ? '_phone' : '')); done('order'); say('No problem. Nothing is ordered. I will ask again at 4 pods.', 'home', 3000); }
+  else if (a === 'tab') { S.tab = b.dataset.v; count('tab_' + S.tab); render(); }
+  else if (a === 'edit') { const q = S.people[i]; q.s = Math.min(4, Math.max(0, q.s + +b.dataset.d)); count('phone_edit'); render(); }
+  else if (a === 'wipe') { S.cups = 0; S.taps = 0; S.people.forEach(q => q.undo = null); count('data_delete'); render(); }
+  else if (a === 'keepone') { S.answered = true; count('keep_' + b.dataset.v); render(); }
+});
+count('open');
+render();
+</script>
+</body>
+</html>
