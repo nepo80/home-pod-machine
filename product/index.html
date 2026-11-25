@@ -722,7 +722,7 @@ function viewOf(name) {
     if (narrow()) { const t = screenCentre.clone().add(new THREE.Vector3(0, -3.6, 0)); return { p: t.clone().addScaledVector(screenNormal, 19).toArray(), t: t.toArray() }; }   // display in the upper half, above the controls
     return { p: [15, 28, 44], t: [3.2, 17.5, 6] };
   }
-  return { hero: { p: [34, 25, 62], t: [1.4, 11.8, 0.5] }, side: { p: [84, 16, 0.01], t: [0, 12.2, -0.4] },
+  return { hero: { p: [31.3, 25, 63.4], t: [-1.3, 11.8, 1.9] }, side: { p: [84, 16, 0.01], t: [0, 12.2, -0.4] },
     tank: { p: [-44, 30, -56], t: [0, 12, -1] }, pods: { p: [24, 42, 48], t: [1, 10.5, 5] } }[name];
 }
 let fly = null;
@@ -821,10 +821,12 @@ function placeHots() {
   controls.enableZoom = focus !== null || dist < 69;
   if (focus && !fly && podT < 0 && dist > 64) unfocus(false);
   if (focus) return;
+  let bx0 = w, bx1 = 0;
+  for (let i = 0; i < 8; i++) { hv.set(i & 1 ? 11.5 : -7, i & 2 ? 27 : 0, i & 4 ? 15 : -15).applyMatrix4(machine.matrixWorld).project(camera); const cx = (hv.x * 0.5 + 0.5) * w; if (cx < bx0) bx0 = cx; if (cx > bx1) bx1 = cx; }
   for (const h of HOTS) {
     hv.copy(h.p); if (!h.world) hv.applyMatrix4(machine.matrixWorld); hv.project(camera);
     const x = (hv.x * 0.5 + 0.5) * w, y = (-hv.y * 0.5 + 0.5) * hh;
-    const lx = Math.min(w - 60, Math.max(60, x + h.dx * k)), ly = Math.min(hh - 40, Math.max(w < 900 ? 250 : 96, y + h.dy * k));
+    const hw = h.el.offsetWidth / 2 + 14, lx = Math.min(w - hw + 6, Math.max(hw - 6, h.dx > 0 ? Math.max(x + h.dx * k, bx1 + hw) : Math.min(x + h.dx * k, bx0 - hw))), ly = Math.min(hh - 40, Math.max(w < 900 ? 250 : 96, y + h.dy * k));
     h.el.style.transform = 'translate(-50%,-50%) translate(' + lx + 'px,' + ly + 'px)';
     const ex = lx + (x > lx ? 1 : -1) * Math.min(Math.abs(x - lx), h.el.offsetWidth / 2 + 4);
     h.line.setAttribute('x1', ex); h.line.setAttribute('y1', ly); h.line.setAttribute('x2', x); h.line.setAttribute('y2', y);
