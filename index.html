@@ -437,6 +437,7 @@ h2 { font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.08; letter-spacing: -0.
   </section>
 </main>
 <footer class="site"><div class="cols"><div><b>Company</b><a href="#">About</a><a href="#">Contact</a><a href="#">Press</a></div><div><b>Help</b><a href="#">Delivery</a><a href="#">Returns</a><a href="#">FAQ</a></div><div><b>Legal</b><a href="#">Imprint</a><a href="#">Privacy</a><a href="#">Terms</a></div></div><p>Placeholder links and information. Student concept for a course at ESCP Business School. Not a Lavazza product and not affiliated with Lavazza.</p></footer>
+<script>(function () { var f = document.querySelector('footer.site'), c = document.querySelector('.closing .copy'); if (!f || !c) return; function u() { var o = getComputedStyle(c).position === 'fixed' ? Math.max(0, innerHeight - f.getBoundingClientRect().top) : 0; c.style.translate = o ? '0 ' + (-o) + 'px' : ''; } addEventListener('scroll', u, { passive: true }); addEventListener('resize', u); u(); })();</script>
 
 <div class="cue" aria-hidden="true"><i></i>Scroll to see it work</div>
 <div class="rail" aria-hidden="true"><i></i></div>
