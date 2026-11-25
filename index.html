@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Home Pod Machine Landing Page Test</title>
+<title>Home Pod Machine</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jura:wght@500;600&display=swap">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..600&display=swap">
 <style>
@@ -266,6 +267,11 @@ h2 { font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.08; letter-spacing: -0.
 .cta, .buy { transition: scale .22s cubic-bezier(.2,.8,.2,1), background-color .2s, filter .2s; } .cta:hover, .buy:hover { scale: 1.04; filter: brightness(1.07); } .cta:active, .buy:active { scale: .965; }
 @media (max-width: 760px) { .top .note { text-align: left; } }
 @media (prefers-reduced-motion: reduce) { .cta, .buy { transition: none; scale: 1 !important; } }
+.site { position: relative; z-index: 5; background: #000; border-top: 1px solid rgba(255,255,255,.12); padding: 44px clamp(16px, 4vw, 48px) 36px; color: rgba(255,255,255,.62); font: 400 14px/1.6 Inter, Arial, sans-serif; text-align: left; }
+.site .cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; max-width: 760px; }
+.site b { display: block; color: #fff; font-weight: 600; margin-bottom: 8px; } .site a { display: block; color: inherit; text-decoration: none; padding: 3px 0; transition: color .2s; } .site a:hover { color: #fff; }
+.site p { margin: 28px 0 0; font-size: 12.5px; max-width: none; color: rgba(255,255,255,.5); }
+.top .name { font-family: Jura, Inter, Arial, sans-serif; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; font-size: 13.5px; } .top .name span { letter-spacing: .08em; }
 </style>
 </head>
 <body>
@@ -430,6 +436,7 @@ h2 { font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.08; letter-spacing: -0.
     </div>
   </section>
 </main>
+<footer class="site"><div class="cols"><div><b>Company</b><a href="#">About</a><a href="#">Contact</a><a href="#">Press</a></div><div><b>Help</b><a href="#">Delivery</a><a href="#">Returns</a><a href="#">FAQ</a></div><div><b>Legal</b><a href="#">Imprint</a><a href="#">Privacy</a><a href="#">Terms</a></div></div><p>Placeholder links and information. Student concept for a course at ESCP Business School. Not a Lavazza product and not affiliated with Lavazza.</p></footer>
 
 <div class="cue" aria-hidden="true"><i></i>Scroll to see it work</div>
 <div class="rail" aria-hidden="true"><i></i></div>
