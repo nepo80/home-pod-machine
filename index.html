@@ -260,6 +260,12 @@ h2 { font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.08; letter-spacing: -0.
 .top .name a { color: var(--gold-bright); text-decoration: none; font-weight: 400; margin-left: 16px; }
 .top .name a:hover { text-decoration: underline; }
 @media (max-width: 760px) { .prodlink { left: 0; width: 100%; top: 9vh; height: 40vh; } .buy { margin: 10px 0 0; } }
+.top { align-items: center; padding-top: 10px; padding-bottom: 10px; background: rgba(0,0,0,.58); -webkit-backdrop-filter: saturate(180%) blur(16px); backdrop-filter: saturate(180%) blur(16px); border-bottom: 1px solid rgba(255,255,255,.08); }
+.menu { display: flex; gap: clamp(20px, 3vw, 40px); } .menu a { color: rgba(255,255,255,.84); text-decoration: none; font: 500 15px var(--body); padding: 8px 2px; transition: color .2s; } .menu a:hover { color: #fff; }
+.top .note { max-width: 21rem; font-size: 11.5px; text-align: right; }
+.cta, .buy { transition: scale .22s cubic-bezier(.2,.8,.2,1), background-color .2s, filter .2s; } .cta:hover, .buy:hover { scale: 1.04; filter: brightness(1.07); } .cta:active, .buy:active { scale: .965; }
+@media (max-width: 760px) { .top .note { text-align: left; } }
+@media (prefers-reduced-motion: reduce) { .cta, .buy { transition: none; scale: 1 !important; } }
 </style>
 </head>
 <body>
@@ -267,7 +273,8 @@ h2 { font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.08; letter-spacing: -0.
 <div class="scrim" aria-hidden="true"></div>
 
 <header class="top">
-  <div class="name">Home pod machine <span>concept</span><a href="product/" data-keep>Product</a><a href="mvp/" data-keep>App</a></div>
+  <div class="name">Home pod machine <span>concept</span></div>
+  <nav class="menu"><a href="product/" data-keep>Product</a><a href="mvp/" data-keep>App</a><a href="mvp/?tab=order" data-keep>Pods</a></nav>
   <p class="note">Student concept for a course at ESCP Business School. Not a Lavazza product and not affiliated with Lavazza.</p>
 </header>
 
