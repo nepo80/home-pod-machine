@@ -128,21 +128,41 @@ button.gold, a.gold { background: var(--gold); color: #000; border-color: var(--
 .appcard .sc u { text-decoration: none; margin-top: auto; background: var(--gold); color: #000; border-radius: 999px; padding: 6px; text-align: center; font-weight: 600; }
 .appcard strong { display: block; font-size: 0.92rem; font-weight: 600; } .appcard small { color: var(--mute); font-size: 0.8rem; }
 @media (max-width: 900px) { .appcard { display: none; } .facts { display: none; } .words { left: 0; right: 0; top: 0; max-width: none; padding: 14px 16px 34px; background: linear-gradient(to bottom, rgba(0,0,0,.94) 0%, rgba(0,0,0,.8) 68%, rgba(0,0,0,0) 100%); } .words .hint, .words .lede { display: none; } .crumbs { margin-bottom: .45rem; } .note.corner { display: none; } h1 { margin-bottom: .3rem; } .act { margin-top: .6rem; } }
-@media (min-width: 901px) { .applink-small { display: none; } }
+.bar { position: fixed; z-index: 20; top: 0; left: 0; right: 0; height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 clamp(16px, 4vw, 48px); background: rgba(0,0,0,.62); -webkit-backdrop-filter: saturate(180%) blur(18px); backdrop-filter: saturate(180%) blur(18px); border-bottom: 1px solid rgba(255,255,255,.1); font: 500 14.5px/1 Inter, Arial, sans-serif; }
+.bar a { color: rgba(255,255,255,.82); text-decoration: none; transition: color .2s; } .bar a:hover, .bar a.on { color: #fff; }
+.bar .brand { color: #fff; font-weight: 600; } .bar .links { display: flex; gap: clamp(18px, 3vw, 38px); }
+.bar .barbuy { background: #c9a961; color: #000; padding: 8px 16px; border-radius: 999px; font-weight: 600; } .bar .barbuy:hover { color: #000; }
+@media (max-width: 560px) { .bar .brand { display: none; } }
+button, .cta, .buy, .barbuy, .chip { transition: scale .22s cubic-bezier(.2,.8,.2,1), background-color .2s, border-color .2s, filter .2s; }
+button:hover, .cta:hover, .buy:hover, .barbuy:hover { scale: 1.035; filter: brightness(1.07); }
+button:active, .cta:active, .buy:active, .barbuy:active { scale: .965; }
+@media (prefers-reduced-motion: reduce) { button, .cta, .buy, .barbuy, .chip { transition: none; scale: 1 !important; } }
+.controls, .shade, .facts, .words .hint, .appcard, .note.inline { display: none !important; }
+.words { top: 84px; max-width: min(21rem, calc(100% - 32px)); } .note.corner { top: auto; bottom: 16px; }
+.words .lede { font-size: 1.05rem; }
+#hots { position: absolute; inset: 0; pointer-events: none; z-index: 3; } #hots svg { position: absolute; inset: 0; width: 100%; height: 100%; } #hots line { stroke: #cfae6a; stroke-width: 1.4; }
+.hot { position: absolute; left: 0; top: 0; pointer-events: auto; min-height: 0; padding: 8px 14px; border-radius: 14px; text-align: left; background: rgba(18,18,20,.84); border: 1px solid rgba(207,174,106,.6); }
+.hot b { display: block; font-size: .9rem; color: var(--paper); font-weight: 600; } .hot span { font-size: .74rem; color: var(--mute); }
+#dispPanel { position: absolute; left: clamp(16px, 4vw, 48px); bottom: 28px; display: flex; flex-direction: column; gap: 8px; padding: 14px; width: min(270px, calc(100% - 32px)); background: var(--panel); border: 1px solid rgba(255,255,255,.14); border-radius: 18px; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+#dispPanel[hidden], #podBtn[hidden] { display: none; } #dispPanel b { font-size: .95rem; } #dispBack { background: none; border-color: transparent; color: var(--gold); }
+@media (max-width: 900px) { .words { top: 52px; } .hot span { display: none; } .hot { padding: 6px 10px; } }
 </style>
 </head>
 <body>
 <main id="stage">
+  <nav class="bar"><a class="brand" href="../" data-keep>Home Pod Machine</a><span class="links"><a class="on" href="./" data-keep>Product</a><a href="../mvp/" data-keep>App</a><a href="../mvp/?tab=order" data-keep>Pods</a></span><span></span></nav>
+  <div id="hots"></div>
+  <div id="dispPanel" hidden><b>The display</b><button type="button" data-s="home">Your name, your cup</button><button type="button" data-s="feedback">One tap of feedback</button><button type="button" data-s="reorder">Asks before it reorders</button><button type="button" id="dispBack">Back</button></div>
   <canvas id="view" aria-label="3D model of a slim black aluminium pod coffee machine. A small touch display floats beside its top right corner and an espresso cup stands under the spout. Drag sideways to turn it."></canvas>
   <div class="shade"></div>
 
   <div class="words">
-    <nav class="crumbs" aria-label="Pages"><a href="../" data-keep>Start</a><i>/</i><span>Product</span><i>/</i><a href="../mvp/" data-keep>App</a></nav>
+    
     <h1>Home Pod Machine</h1>
     <p class="price"><b>&pound;99</b>planned price &middot; not on sale yet</p>
-    <p class="lede">A slim pod machine for Lavazza&rsquo;s existing pods. Tap your name on the display and you get your cup, at your strength and your size. It learns from one tap of feedback, and it asks before it reorders pods. No subscription.</p>
+    <p class="lede">Tap your name. Get your cup.</p>
     <ul class="facts"><li>12 cm wide, 26 cm tall, 29 cm deep</li><li>Takes an espresso cup or a mug</li><li>Works without an app</li></ul>
-    <div class="act"><button type="button" class="gold" id="buy">Buy now</button><button type="button" id="podBtn">Put a pod in</button><a class="applink-small" href="../mvp/" data-keep><button type="button" tabindex="-1">Open the app</button></a></div>
+    <div class="act"><button type="button" class="gold" id="buy">Buy now</button><button type="button" id="podBtn" hidden>Put a pod in</button><a class="applink-small" href="../mvp/" data-keep><button type="button" tabindex="-1">Open the app</button></a></div>
     <p id="buyMsg" hidden>You cannot buy it yet. This is a concept test for a university course, so nothing is sold or charged. <a href="../" data-keep>Leave your email on the start page</a> and we tell you if it becomes real.</p>
     <p class="hint" id="hint">Drag to turn the machine all the way round. Tap a name on its display.</p>
   </div>
@@ -758,12 +778,47 @@ function stepPod(dt) {
 }
 document.getElementById('podBtn').addEventListener('click', insertPod);
 
+/* ---------- Feature arrows: tap one to see that part ---------- */
+const dispPanel = document.getElementById('dispPanel');
+function panel(on) { dispPanel.hidden = !on; }
+const HOTS = [
+  { id: 'display', label: 'Display', sub: 'Tap to see what it does', p: screenCentre.clone(), world: true, dx: 250, dy: -50, go: () => { lookAt('display'); panel(true); } },
+  { id: 'pod', label: 'Pod slot', sub: 'Tap to put a pod in', p: new THREE.Vector3(0, TOP + 0.3, SLOT_Z), dx: -230, dy: -40, go: () => { panel(false); insertPod(); } },
+  { id: 'drawer', label: 'Used pods', sub: 'Tap to open', p: new THREE.Vector3(0, 6.1, COL_Z), dx: -250, dy: 30, go: () => { panel(false); lookAt(podsMode ? 'hero' : 'pods'); } },
+  { id: 'cup', label: 'Cup or mug', sub: 'Both fit', p: new THREE.Vector3(0, TRAY_TOP + 6, TRAY_Z), dx: 270, dy: 40, go: () => { panel(false); lookAt('hero'); document.getElementById('toggleMug').click(); } }
+];
+const hotBox = document.getElementById('hots'), SVGNS = 'http://www.w3.org/2000/svg';
+const hotSvg = document.createElementNS(SVGNS, 'svg'); hotBox.appendChild(hotSvg);
+hotSvg.innerHTML = '<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#cfae6a"/></marker></defs>';
+for (const h of HOTS) {
+  h.line = document.createElementNS(SVGNS, 'line'); h.line.setAttribute('marker-end', 'url(#ah)'); hotSvg.appendChild(h.line);
+  h.el = document.createElement('button'); h.el.type = 'button'; h.el.className = 'hot'; h.el.innerHTML = '<b>' + h.label + '</b><span>' + h.sub + '</span>';
+  h.el.addEventListener('click', () => { count('hot_' + h.id); h.go(); }); hotBox.appendChild(h.el);
+}
+const hv = new THREE.Vector3();
+function placeHots() {
+  const w = stage.clientWidth, hh = stage.clientHeight, k = w < 700 ? 0.5 : 1;
+  for (const h of HOTS) {
+    hv.copy(h.p); if (!h.world) hv.applyMatrix4(machine.matrixWorld); hv.project(camera);
+    const x = (hv.x * 0.5 + 0.5) * w, y = (-hv.y * 0.5 + 0.5) * hh;
+    const lx = Math.min(w - 60, Math.max(60, x + h.dx * k)), ly = Math.min(hh - 40, Math.max(96, y + h.dy * k));
+    h.el.style.transform = 'translate(-50%,-50%) translate(' + lx + 'px,' + ly + 'px)';
+    const ex = lx + (x > lx ? 1 : -1) * Math.min(Math.abs(x - lx), h.el.offsetWidth / 2 + 4);
+    h.line.setAttribute('x1', ex); h.line.setAttribute('y1', ly); h.line.setAttribute('x2', x); h.line.setAttribute('y2', y);
+  }
+}
+dispPanel.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.id === 'dispBack') { panel(false); lookAt('hero'); return; }
+  count('display_' + b.dataset.s); document.querySelector('#screens [data-screen="' + b.dataset.s + '"]').click();
+});
+
 /* ---------- Frame loop ---------- */
 function resize() {
   const w = stage.clientWidth, h = stage.clientHeight;
   renderer.setSize(w, h, false); camera.aspect = w / h;
   camera.fov = w / h < 0.8 ? 60 : w / h < 1.25 ? 42 : 30;                                         // pull back on tall phone screens
-  if (w / h > 1.25) camera.setViewOffset(w, h, -w * 0.12, h * 0.05, w, h);    // model sits right of the headline
+  if (w / h > 1.25) camera.setViewOffset(w, h, 0, -h * 0.03, w, h);    // model sits right of the headline
   else camera.setViewOffset(w, h, 0, -h * 0.03, w, h);                         // lift it clear of the controls
   camera.updateProjectionMatrix();
   if (narrow()) document.getElementById('hint').textContent = 'Drag sideways to turn it. Tap the display to come closer.';
@@ -787,7 +842,7 @@ function frame() {
   if (shelfA !== sGoal) { shelfA = reduceMotion ? sGoal : THREE.MathUtils.clamp(shelfA + Math.sign(sGoal - shelfA) * dt / 0.8, 0, 1); placeShelf(); }
   vesselVisibility();
   dimMug.line.visible = shelfGoal === 1; dimCup.line.visible = shelfGoal === 0;
-  stepPod(dt); stepBrew(dt); controls.update(); renderer.render(scene, camera);
+  stepPod(dt); stepBrew(dt); controls.update(); renderer.render(scene, camera); placeHots();
   if (dims.visible) {
     const w = stage.clientWidth, h = stage.clientHeight;
     for (const d of dimLabels) {
