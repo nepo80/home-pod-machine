@@ -246,7 +246,7 @@ h2 { font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.08; letter-spacing: -0.
   .phone-stage { --phone-h: min(50vh, 480px); margin: 0 auto; }
   .pin .scrim { display: block; }
   .pin .copy { top: auto; bottom: 34px; width: calc(100% - 2 * var(--gutter)); transform: translateY(var(--y, 0px)); }
-  .pin .closing .copy { bottom: 30px; }
+  .pin .closing .copy { bottom: 30px; background: rgba(0,0,0,0.74); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border-radius: 20px; padding: 22px 18px 18px; width: calc(100% - 24px); }
   .pin .phone-stage { left: 50%; top: 37%; }
   h2 { max-width: 14ch; }
 }
