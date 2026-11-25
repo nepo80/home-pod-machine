@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Home Pod Machine: clickable prototype</title>
+<title>Home Pod Machine: the app</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jura:wght@500;600&display=swap">
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500&family=Inter:opsz,wght@14..32,400..600&display=swap">
@@ -116,6 +117,12 @@ button:active, .cta:active, .buy:active, .barbuy:active { scale: .965; }
 .phone { order: 2; width: 320px; } .machine { order: 3; } .guide { order: 1; }
 ol.tasks li { padding: 11px 0 11px 34px; } ol.tasks li::before { top: 12px; } ol.tasks li.done::after { top: 16px; }
 @media (max-width: 980px) { .stage { grid-template-columns: 1fr; } .phone { order: 1; } .machine { order: 2; } .guide { order: 3; } }
+.site { position: relative; z-index: 5; background: #000; border-top: 1px solid rgba(255,255,255,.12); padding: 44px clamp(16px, 4vw, 48px) 36px; color: rgba(255,255,255,.62); font: 400 14px/1.6 Inter, Arial, sans-serif; text-align: left; }
+.site .cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; max-width: 760px; }
+.site b { display: block; color: #fff; font-weight: 600; margin-bottom: 8px; } .site a { display: block; color: inherit; text-decoration: none; padding: 3px 0; transition: color .2s; } .site a:hover { color: #fff; }
+.site p { margin: 28px 0 0; font-size: 12.5px; max-width: none; color: rgba(255,255,255,.5); }
+.bar .brand { font-family: Jura, Inter, Arial, sans-serif; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; font-size: 13.5px; }
+h1 { font-family: Jura, Inter, Arial, sans-serif; letter-spacing: .02em; }
 </style>
 </head>
 <body>
@@ -215,6 +222,7 @@ ol.tasks li { padding: 11px 0 11px 34px; } ol.tasks li::before { top: 12px; } ol
 <footer>Student concept for a course at ESCP Business School. Not a Lavazza product and not affiliated with Lavazza. Example data. Taps are counted anonymously.</footer>
 </div>
 
+<footer class="site"><div class="cols"><div><b>Company</b><a href="#">About</a><a href="#">Contact</a><a href="#">Press</a></div><div><b>Help</b><a href="#">Delivery</a><a href="#">Returns</a><a href="#">FAQ</a></div><div><b>Legal</b><a href="#">Imprint</a><a href="#">Privacy</a><a href="#">Terms</a></div></div><p>Placeholder links and information. Student concept for a course at ESCP Business School. Not a Lavazza product and not affiliated with Lavazza.</p></footer>
 <script>
 /* ---------- anonymous counting (same sheet as the concept page) ---------- */
 const COUNT_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSeOwYpo8mNUuV7g1eulR6b3GMRHXnu-Q5nURwDpQlGpMff7vg/formResponse';
