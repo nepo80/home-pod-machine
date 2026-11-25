@@ -252,6 +252,14 @@ h2 { font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.08; letter-spacing: -0.
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+.buy { display: inline-flex; align-items: center; height: 52px; padding: 0 26px; margin-left: 10px; border: 1px solid var(--gold); border-radius: 999px; color: var(--gold-bright); text-decoration: none; font: 500 17px var(--body); letter-spacing: -0.011em; vertical-align: top; }
+.buy:hover { background: rgba(201,169,97,.14); }
+.buy:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.hero { position: relative; }
+.prodlink { position: absolute; right: 0; top: 12vh; width: 52%; height: 76vh; cursor: pointer; }
+.top .name a { color: var(--gold-bright); text-decoration: none; font-weight: 400; margin-left: 16px; }
+.top .name a:hover { text-decoration: underline; }
+@media (max-width: 760px) { .prodlink { left: 0; width: 100%; top: 9vh; height: 40vh; } .buy { margin: 10px 0 0; } }
 </style>
 </head>
 <body>
@@ -259,17 +267,18 @@ h2 { font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.08; letter-spacing: -0.
 <div class="scrim" aria-hidden="true"></div>
 
 <header class="top">
-  <div class="name">Home pod machine <span>concept</span></div>
+  <div class="name">Home pod machine <span>concept</span><a href="product/" data-keep>Product</a><a href="mvp/" data-keep>App</a></div>
   <p class="note">Student concept for a course at ESCP Business School. Not a Lavazza product and not affiliated with Lavazza.</p>
 </header>
 
 <main>
   <section class="hero">
+    <a class="prodlink" href="product/" data-keep aria-label="See the product"></a>
     <div class="copy">
       <h1>Home coffee that doesn&rsquo;t taste instant.</h1>
       <p>One slim machine for everyone at home. Each of you gets the cup you like.</p>
       <div class="act">
-        <button class="cta" type="button">Notify me</button>
+        <button class="cta" type="button">Notify me</button><a class="buy" href="product/" data-keep>Buy now</a>
         <p class="aside">Then leave your email. Nothing else.</p>
         <form class="mail" novalidate>
           <label for="mail-top">Where should we notify you?</label>
@@ -398,7 +407,7 @@ h2 { font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.08; letter-spacing: -0.
       <h2>Would you want it in your kitchen?</h2>
       <p>Tap the button and leave your email. That is all we ask.</p>
       <div class="act">
-        <button class="cta" type="button">Notify me</button>
+        <button class="cta" type="button">Notify me</button><a class="buy" href="product/" data-keep>Buy now</a>
         <form class="mail" novalidate>
           <label for="mail-end">Where should we notify you?</label>
           <div class="mail-row">
@@ -445,6 +454,7 @@ function count(event, email) {
   try { fetch(COUNT_URL, { method: 'POST', mode: 'no-cors', keepalive: true, body: new URLSearchParams(row) }).catch(() => {}); } catch (e) {}
 }
 count('view');
+for (const a of document.querySelectorAll('a[data-keep]')) { if (linkGroup !== 'none') a.href += '#' + linkGroup; a.addEventListener('click', () => count(a.classList.contains('buy') ? 'buy_now' : a.classList.contains('prodlink') ? 'product_click' : 'nav_' + a.textContent.toLowerCase())); }
 
 /* ---------- The one button, then the email ---------- */
 const page = document.documentElement, touch = matchMedia('(pointer: coarse)').matches;
