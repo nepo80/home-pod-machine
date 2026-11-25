@@ -158,6 +158,7 @@ h1 { font-family: Jura, Inter, Arial, sans-serif; font-weight: 500; letter-spaci
 #zoomBack { position: absolute; left: 50%; bottom: 28px; translate: -50% 0; z-index: 4; } #zoomBack[hidden] { display: none; }
 #dispPanel { z-index: 4; }
 @media (max-width: 900px) { #dispPanel { bottom: 84px; left: 50%; translate: -50% 0; flex-direction: row; flex-wrap: wrap; justify-content: center; width: min(560px, calc(100% - 32px)); } #dispPanel b { width: 100%; text-align: center; } }
+@media (max-width: 700px) { #stage { height: 88vh; height: 88svh; } .hot { padding: 9px 12px; } .site .cols { gap: 16px; } #zoomBack { bottom: 18px; } #dispPanel { bottom: 70px; padding: 10px; gap: 6px; } }
 </style>
 </head>
 <body>
@@ -707,6 +708,7 @@ canvas.addEventListener('pointerup', e => {
   if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6) return;
   const p = pick(e); if (!p) return;
   if (p.button) { stopPour(); return; }
+  if (stage.clientWidth < 700 && camera.position.distanceTo(screenCentre) > 30) { HOTS[0].go(); return; }   // on a phone the tiles are too small to hit from afar: the first tap comes closer
   const hit = ui.hits.find(h => p.x >= h.x && p.x <= h.x + h.w && p.y >= h.y && p.y <= h.y + h.h);
   if (hit) hit.action();
 });
@@ -780,7 +782,9 @@ document.getElementById('appCard').addEventListener('click', () => count('to_app
       let px = rnd() * 1024, py = -40; x.beginPath(); x.moveTo(px, py); while (py < 1064) { const nx = px + (rnd() - 0.42) * 190, ny = py + 60 + rnd() * 150; x.quadraticCurveTo(px + (rnd() - 0.5) * 120, (py + ny) / 2, nx, ny); px = nx; py = ny; } x.stroke(); }
     const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; };
   const WZ = -50, black = km(0x0e0e0f, 0.62), walnut = km(0x4a3323, 0.5), brass = km(0xc8a45e, 0.26, { metalness: 1, envMapIntensity: 1.3 }), ceramic = km(0x18181a, 0.35, { envMapIntensity: 0.6 });
-  kput(new THREE.BoxGeometry(400, 4, 92), new THREE.MeshPhysicalMaterial({ map: marble(2, 0.46), roughness: 0.32, metalness: 0, specularIntensity: 0.1, envMapIntensity: 1 }), 0, -2, WZ + 46, false);      // worktop, top at 0
+  kput(new THREE.BoxGeometry(400, 4, 92), new THREE.MeshLambertMaterial({ color: 0x17171a }), 0, -2.06, WZ + 46, false).receiveShadow = false;   // plain matt worktop, a hair below the machine's base so no two faces share a plane
+  { const bc = document.createElement('canvas'); bc.width = bc.height = 256; const bx = bc.getContext('2d'), bg = bx.createRadialGradient(128, 128, 16, 128, 128, 128); bg.addColorStop(0, 'rgba(0,0,0,0.9)'); bg.addColorStop(0.55, 'rgba(0,0,0,0.5)'); bg.addColorStop(1, 'rgba(0,0,0,0)'); bx.fillStyle = bg; bx.fillRect(0, 0, 256, 256);
+    const blob = new THREE.Mesh(new THREE.CircleGeometry(25, 48), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(bc), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 })); blob.rotation.x = -Math.PI / 2; blob.scale.set(1, 1.55, 1); blob.position.set(0.5, 0.03, 0); blob.renderOrder = 1; scene.add(blob); }   // soft fixed shadow under the machine      // worktop, top at 0
   kput(new THREE.BoxGeometry(400, 90, 2), black, 0, -49, WZ + 89, false);                                                              // base cabinet fronts
   kput(new THREE.BoxGeometry(400, 0.5, 0.5), brass, 0, -4.4, WZ + 90.1, false);                                                         // brass line under the worktop edge
   kput(new THREE.PlaneGeometry(400, 160), new THREE.MeshPhysicalMaterial({ map: marble(2, 0.8), roughness: 0.4, metalness: 0, specularIntensity: 0.12, envMapIntensity: 1 }), 0, 80, WZ, false);         // marble splashback
@@ -835,7 +839,7 @@ function unfocus(back) { focus = null; stage.classList.remove('close-up'); hotBo
 backBtn.addEventListener('click', () => unfocus(true));
 addEventListener('keydown', e => { if (e.key === 'Escape' && focus) unfocus(true); });
 const HOTS = [
-  { id: 'display', label: 'Display', sub: 'Tap to see what it does', p: screenCentre.clone(), world: true, dx: 250, dy: 0, go: () => { focusOn('display'); if (fly) { fly.p1.copy(screenCentre).addScaledVector(screenNormal, 24); fly.t1.copy(screenCentre); } panel(true); } },
+  { id: 'display', label: 'Display', sub: 'Tap to see what it does', p: screenCentre.clone(), world: true, dx: 250, dy: 0, go: () => { focusOn('display'); if (fly) { fly.t1.copy(screenCentre); if (stage.clientWidth < 900) fly.t1.y -= stage.clientWidth < 700 ? 4 : 2.6; fly.p1.copy(fly.t1).addScaledVector(screenNormal, 24); } panel(true); } },
   { id: 'pod', label: 'Pod slot', sub: 'Tap to put a pod in', p: new THREE.Vector3(0, TOP + 0.3, SLOT_Z), dx: 230, dy: -80, go: () => { focusOn('pod', true); insertPod(); } },
   { id: 'drawer', label: 'Used pods', sub: 'Tap to open', p: new THREE.Vector3(0, 6.1, COL_Z), dx: -250, dy: 30, go: () => { focusOn('pods'); } },
   { id: 'cup', label: 'Cup or mug', sub: 'Both fit', p: new THREE.Vector3(0, TRAY_TOP + 6, TRAY_Z), dx: 260, dy: 80, go: () => { showVessel(vessel === 'cup' ? 'mug' : 'cup', true); } }
@@ -875,9 +879,9 @@ dispPanel.addEventListener('click', e => {
 function resize() {
   const w = stage.clientWidth, h = stage.clientHeight;
   renderer.setSize(w, h, false); camera.aspect = w / h;
-  camera.fov = w / h < 0.8 ? 60 : w / h < 1.25 ? 42 : 30;                                         // pull back on tall phone screens
+  camera.fov = w / h < 0.65 ? 54 : w / h < 0.8 ? 54 : w / h < 1.25 ? 42 : 30;                                         // pull back on tall phone screens
   if (w / h > 1.25) camera.setViewOffset(w, h, 0, -h * 0.03, w, h);    // model sits right of the headline
-  else camera.setViewOffset(w, h, 0, -h * 0.03, w, h);                         // lift it clear of the controls
+  else camera.setViewOffset(w, h, w < 700 ? w * 0.075 : 0, -h * (w < 700 ? 0.1 : 0.03), w, h);                         // lift it clear of the controls
   camera.updateProjectionMatrix();
   if (narrow()) document.getElementById('hint').textContent = 'Drag sideways to turn it. Tap the display to come closer.';
 }
