@@ -101,22 +101,37 @@ footer { padding: 26px 0 44px; font-size: 13.5px; color: var(--dim); }
   .where .grid { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { .cup::after { animation-duration: .01s; } }
+.bar { position: fixed; z-index: 20; top: 0; left: 0; right: 0; height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 clamp(16px, 4vw, 48px); background: rgba(0,0,0,.62); -webkit-backdrop-filter: saturate(180%) blur(18px); backdrop-filter: saturate(180%) blur(18px); border-bottom: 1px solid rgba(255,255,255,.1); font: 500 14.5px/1 Inter, Arial, sans-serif; }
+.bar a { color: rgba(255,255,255,.82); text-decoration: none; transition: color .2s; } .bar a:hover, .bar a.on { color: #fff; }
+.bar .brand { color: #fff; font-weight: 600; } .bar .links { display: flex; gap: clamp(18px, 3vw, 38px); }
+.bar .barbuy { background: #c9a961; color: #000; padding: 8px 16px; border-radius: 999px; font-weight: 600; } .bar .barbuy:hover { color: #000; }
+@media (max-width: 560px) { .bar .brand { display: none; } }
+button, .cta, .buy, .barbuy, .chip { transition: scale .22s cubic-bezier(.2,.8,.2,1), background-color .2s, border-color .2s, filter .2s; }
+button:hover, .cta:hover, .buy:hover, .barbuy:hover { scale: 1.035; filter: brightness(1.07); }
+button:active, .cta:active, .buy:active, .barbuy:active { scale: .965; }
+@media (prefers-reduced-motion: reduce) { button, .cta, .buy, .barbuy, .chip { transition: none; scale: 1 !important; } }
+.wrap { padding-top: 60px; } h1 { margin-top: 26px; } .lede { margin-bottom: 22px; }
+.where { display: none; }
+.stage { grid-template-columns: minmax(180px, 240px) auto auto; justify-content: center; }
+.phone { order: 2; width: 320px; } .machine { order: 3; } .guide { order: 1; }
+ol.tasks li { padding: 11px 0 11px 34px; } ol.tasks li::before { top: 12px; } ol.tasks li.done::after { top: 16px; }
+@media (max-width: 980px) { .stage { grid-template-columns: 1fr; } .phone { order: 1; } .machine { order: 2; } .guide { order: 3; } }
 </style>
 </head>
 <body>
 <div class="wrap">
-<header class="top"><span><b>Home Pod Machine</b> · the app and the machine display</span><nav><a href="../" data-keep>Start</a> &nbsp;/&nbsp; <a href="../product/" data-keep>Product</a> &nbsp;/&nbsp; <b>App</b></nav></header>
-<h1>Try the machine before it exists.</h1>
-<p class="lede">This is the screen on the machine, with the optional phone app next to it. Tap around as if it stood in your kitchen. The household, the pods and the stock are examples. Nothing is ordered and nothing is saved.</p>
+<nav class="bar"><a class="brand" href="../" data-keep>Home Pod Machine</a><span class="links"><a href="../product/" data-keep>Product</a><a class="on" href="./" data-keep>App</a><a href="./?tab=order" data-keep>Pods</a></span><span></span></nav>
+<h1>The app</h1>
+<p class="lede">Optional. Everything also works on the machine.</p>
 
 <main class="stage">
   <section class="guide" aria-label="Things to try">
-    <h3>Four things to try</h3>
+    <h3>Try this</h3>
     <ol class="tasks" id="tasks">
-      <li data-t="brew"><b>Make your own cup with one touch</b>Tap a name on the machine.</li>
-      <li data-t="learn"><b>Tell it how the cup was</b>Then accept its suggestion, or keep things as they are.</li>
-      <li data-t="match"><b>Add a person and let it pick a pod</b>Use “Add a person” on the machine.</li>
-      <li data-t="order"><b>Answer the reorder question</b>It appears when pods run low.</li>
+      <li data-t="brew"><b>Make your cup</b></li>
+      <li data-t="learn"><b>Say how it was</b></li>
+      <li data-t="match"><b>Add a person</b></li>
+      <li data-t="order"><b>Order pods</b></li>
     </ol>
     <div class="ask" id="ask" hidden></div>
     <button class="reset" data-act="reset">Start again</button>
@@ -125,13 +140,13 @@ footer { padding: 26px 0 44px; font-size: 13.5px; color: var(--dim); }
   <section class="col machine" aria-label="Machine display">
     <h3>On the machine</h3>
     <div class="bezel"><div class="screen" id="screen" aria-live="polite"></div></div>
-    <p class="cap">The display sits on the side of the machine. Everything here works without the app.</p>
+    
   </section>
 
   <section class="col phone" aria-label="Optional phone app">
-    <h3>The app (optional)</h3>
+    <h3>On your phone</h3>
     <div class="pbezel"><div class="pscreen" id="phone"></div></div>
-    <p class="cap">Use the menu at the top: reorder pods at any time, edit each person’s cup, see or delete your data.</p>
+    
   </section>
 </main>
 
@@ -197,7 +212,7 @@ footer { padding: 26px 0 44px; font-size: 13.5px; color: var(--dim); }
     </ul>
   </div>
 </section>
-<footer>Student concept for a course at ESCP Business School. Not a Lavazza product and not affiliated with Lavazza. Pod names come from Lavazza’s current range; descriptions, stock and orders are examples. Taps on this page are counted anonymously for the course; no personal data is collected.</footer>
+<footer>Student concept for a course at ESCP Business School. Not a Lavazza product and not affiliated with Lavazza. Example data. Taps are counted anonymously.</footer>
 </div>
 
 <script>
@@ -221,6 +236,7 @@ const PODS = [
 ];
 const BOX = 16, BOX_PRICE = 6.45, PER_DAY = 3;
 const pod = id => PODS.find(p => p.id === id);
+const START_TAB = ({ order: 'order', people: 'people', data: 'data' })[new URLSearchParams(location.search).get('tab')] || 'home';
 const fresh = () => ({
   people: [
     { name: 'Anna', s: 1, size: 'mug', pod: 'delizioso', undo: null },
@@ -228,7 +244,7 @@ const fresh = () => ({
     { name: 'Dad', s: 3, size: 'small', pod: 'passionale', undo: null }
   ],
   left: 9, cups: 23, taps: 6, asked: false, order: null, askAt: 7,
-  view: 'home', who: 0, dir: 0, msg: '', draft: null, tab: 'home', change: { pod: 'rossa', boxes: 2 }, done: {}, answered: false
+  view: 'home', who: 0, dir: 0, msg: '', draft: null, tab: START_TAB, change: { pod: 'rossa', boxes: 2 }, done: {}, answered: false
 });
 let S = fresh();
 let timer = 0;
@@ -291,16 +307,16 @@ function phone() {
       <div class="row"><button class="chip gold" data-act="order" data-how="yes" data-from="phone">Yes</button><button class="chip" data-act="tab" data-v="order">Change</button><button class="chip" data-act="notnow" data-from="phone">Not now</button></div></div>`;
   const confirmed = S.order ? `<div class="card"><b>Order confirmed</b>${S.order.boxes} ${S.order.boxes > 1 ? 'boxes' : 'box'} of ${pod(S.order.pod).name}, ${money(S.order.boxes * BOX_PRICE)}. Arrives ${arrive()}.<br>Prototype: nothing was ordered or charged.</div>` : '';
   let body = '';
-  if (S.tab === 'home') body = `<div class="card"><span class="big">Good morning</span>${S.people.length} people share this machine.</div>` + confirmed + (low ? question : '') +
-    `<div class="card"><b>Pods</b><span class="big">${S.left} left</span>${S.order ? 'More are on the way.' : 'Enough until ' + runOut() + ', at about ' + PER_DAY + ' cups a day.'}<div class="row"><button class="chip gold" data-act="tab" data-v="order">Order pods</button></div></div>
+  if (S.tab === 'home') body = confirmed + (low ? question : '') +
+    `<div class="card"><b>Pods</b><span class="big">${S.left} left</span>${S.order ? 'More are on the way.' : 'Enough until ' + runOut() + '.'}<div class="row"><button class="chip gold" data-act="tab" data-v="order">Order pods</button></div></div>
     <div class="card"><b>At home</b>${S.people.map(q => `${q.name}: ${STRENGTH[q.s]}, ${SIZE[q.size]}`).join('<br>')}<div class="row"><button class="chip" data-act="tab" data-v="people">Edit profiles</button></div></div>`;
   if (S.tab === 'people') body = S.people.map((q, i) => `<div class="card"><b>${q.name}</b>${cupOf(q)}
       <div class="row" style="align-items:center;justify-content:space-between"><span>Strength: ${STRENGTH[q.s]}</span><span class="stepper"><button data-act="edit" data-i="${i}" data-d="-1" aria-label="Milder">−</button><button data-act="edit" data-i="${i}" data-d="1" aria-label="Stronger">+</button></span></div>
       <h5>Cup size</h5><div class="row">${Object.keys(SIZE).map(z => `<button class="chip${q.size === z ? ' sel' : ''}" data-act="size" data-i="${i}" data-v="${z}">${SIZE[z]}</button>`).join('')}</div>
       <h5>Pod</h5><div class="row">${PODS.map(x => `<button class="chip${q.pod === x.id ? ' sel' : ''}" data-act="ppod" data-i="${i}" data-v="${x.id}">${x.name}</button>`).join('')}</div></div>`).join('') +
-    `<div class="card"><b>Someone new?</b>Add a person on the machine: two questions, then it suggests a pod.<div class="row"><button class="chip gold" data-act="add">Add a person</button></div></div>`;
+    `<div class="card"><b>Someone new?</b><div class="row"><button class="chip gold" data-act="add">Add a person</button></div></div>`;
   if (S.tab === 'order') body = confirmed + (low ? `<div class="card"><b>Pods run out on ${runOut()}</b>${S.left} left. You can order now or say “not now”.<div class="row"><button class="chip" data-act="notnow" data-from="phone">Not now</button></div></div>` : '') +
-    `<div class="card"><b>Order pods</b>Any time, without a subscription.<h5>Which pod</h5>${PODS.map(x => `<button class="chip${c.pod === x.id ? ' sel' : ''}" style="display:block;width:100%;text-align:left;margin-bottom:6px;border-radius:12px" data-act="setpod" data-v="${x.id}">${x.name}<br><span style="color:var(--dim);font-size:13px">${x.note}</span></button>`).join('')}
+    `<div class="card"><b>Order pods</b>No subscription.<h5>Which pod</h5>${PODS.map(x => `<button class="chip${c.pod === x.id ? ' sel' : ''}" style="display:block;width:100%;text-align:left;margin-bottom:6px;border-radius:12px" data-act="setpod" data-v="${x.id}">${x.name}<br><span style="color:var(--dim);font-size:13px">${x.note}</span></button>`).join('')}
       <div class="row" style="align-items:center;justify-content:space-between"><span>Boxes of ${BOX}</span><span class="stepper"><button data-act="boxes" data-d="-1" aria-label="One box fewer">−</button><b style="margin:0">${c.boxes}</b><button data-act="boxes" data-d="1" aria-label="One box more">+</button></span></div>
       <div class="row"><button class="chip gold" style="width:100%" data-act="order" data-how="manual" data-from="phone">Order now for ${total}</button></div></div>`;
   if (S.tab === 'data') body = `<div class="card"><b>What the machine keeps</b>${S.cups} cups counted by profile<br>${S.taps} feedback taps<br>pods delivered and used<br><br>Nothing else. No voice, no location.</div>
