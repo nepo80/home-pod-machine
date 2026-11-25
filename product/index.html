@@ -226,6 +226,7 @@ h1 { font-family: Jura, Inter, Arial, sans-serif; font-weight: 500; letter-spaci
   <div id="fallback"><p>This 3D model needs WebGL, which this browser has switched off.</p></div>
 </main>
 <footer class="site"><div class="cols"><div><b>Company</b><a href="#">About</a><a href="#">Contact</a><a href="#">Press</a></div><div><b>Help</b><a href="#">Delivery</a><a href="#">Returns</a><a href="#">FAQ</a></div><div><b>Legal</b><a href="#">Imprint</a><a href="#">Privacy</a><a href="#">Terms</a></div></div><p>Placeholder links and information. Student concept for a course at ESCP Business School. Not a Lavazza product and not affiliated with Lavazza.</p></footer>
+<script>document.querySelectorAll('footer.site a').forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); document.querySelector('footer.site p').textContent = a.textContent + ': placeholder, there is no page behind this link yet. Student concept for a course at ESCP Business School. Not a Lavazza product and not affiliated with Lavazza.'; }); });</script>
 
 <script type="importmap">
 { "imports": {
@@ -706,7 +707,6 @@ canvas.addEventListener('pointerup', e => {
   if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6) return;
   const p = pick(e); if (!p) return;
   if (p.button) { stopPour(); return; }
-  if (narrow() && camera.position.distanceTo(screenCentre) > 20) { HOTS[0].go(); return; }   // on a phone, come closer first
   const hit = ui.hits.find(h => p.x >= h.x && p.x <= h.x + h.w && p.y >= h.y && p.y <= h.y + h.h);
   if (hit) hit.action();
 });
@@ -771,32 +771,38 @@ document.getElementById('buy').addEventListener('click', () => { document.getEle
 document.getElementById('appCard').addEventListener('click', () => count('to_app'));
 
 /* ---------- Putting a pod in: it comes over the top, turns flat and drops into the slot ---------- */
-{ /* Kitchen: worktop, tiled wall, wall cabinet with a warm light strip, and a few things that live on a worktop */
-  const km = (c, r = 0.6, o = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: 0, envMapIntensity: 0.35, ...o });
+{ /* Kitchen: black marble worktop and splashback with gold veins, matt black cabinets with brass lines, a warm light strip, brass tap */
+  const km = (c, r = 0.6, o = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: 0, envMapIntensity: 0.3, ...o });
   const kput = (g, mat, x, y, z, cast = true) => { const o = new THREE.Mesh(g, mat); o.position.set(x, y, z); o.castShadow = cast; o.receiveShadow = true; scene.add(o); return o; };
-  const tc = document.createElement('canvas'); tc.width = 200; tc.height = 200; const tx = tc.getContext('2d');
-  tx.fillStyle = '#4a4a4e'; tx.fillRect(0, 0, 200, 200); tx.fillStyle = '#2c2c30';
-  tx.fillRect(3, 3, 194, 94); tx.fillRect(-97, 103, 194, 94); tx.fillRect(103, 103, 194, 94);
-  const tiles = new THREE.CanvasTexture(tc); tiles.wrapS = tiles.wrapT = THREE.RepeatWrapping; tiles.repeat.set(20, 8); tiles.colorSpace = THREE.SRGBColorSpace;
-  const WZ = -50, wood = km(0x3a2a1e, 0.55), oak = km(0x7a583a, 0.6), cream = km(0xd8d0c2, 0.5), steel = km(0xb9bcc2, 0.3, { metalness: 0.6, envMapIntensity: 1 });
-  kput(new THREE.BoxGeometry(400, 4, 92), km(0x1c1c1f, 0.72, { envMapIntensity: 0.15 }), 0, -2, WZ + 46, false);              // stone worktop, top at 0
-  kput(new THREE.BoxGeometry(400, 90, 2), wood, 0, -49, WZ + 89, false);                                                    // base cabinet fronts
-  kput(new THREE.PlaneGeometry(400, 160), km(0xffffff, 0.3, { map: tiles, envMapIntensity: 0.5 }), 0, 80, WZ, false);        // tiled wall
-  kput(new THREE.BoxGeometry(400, 70, 32), wood, 0, 52 + 35, WZ + 16, false);                                               // wall cabinet, 52 cm above the worktop
-  for (let i = -3; i <= 3; i++) kput(new THREE.BoxGeometry(0.5, 70, 0.3), km(0x120d09, 0.8), i * 60 + 30, 87, WZ + 32.1, false);   // door gaps
-  kput(new THREE.BoxGeometry(150, 0.4, 0.8), new THREE.MeshBasicMaterial({ color: 0xffd9a6 }), 0, 51.7, WZ + 6, false);     // light strip
-  const strip = new THREE.PointLight(0xffb873, 1.5, 0, 0); strip.position.set(0, 48, WZ + 10); scene.add(strip);
-  kput(new THREE.BoxGeometry(22, 30, 1.6), oak, -34, 14.8, WZ + 3.5).rotation.x = -0.1;                                      // chopping board
-  kput(new THREE.CylinderGeometry(4.8, 4.2, 11, 32), cream, -24, 5.5, WZ + 14);                                              // crock of spoons
-  [[-1.6, 0.16], [0.4, -0.1], [2, 0.2]].forEach(([dx, tilt], i) => { kput(new THREE.CylinderGeometry(0.45, 0.45, 14, 10), oak, -24 + dx, 13.5 + i * 0.5, WZ + 14).rotation.z = -tilt;
-    kput(new THREE.SphereGeometry(1.9, 16, 10), oak, -24 + dx + Math.sin(tilt) * 7.5, 20.6 + i * 0.5, WZ + 14).scale.set(1, 1.35, 0.35); });
-  [[-2, -1.5], [1.6, -2], [0.2, 1.8], [-1.4, 1.2], [2, 0.6], [0, -0.4], [-2.2, 0], [1.2, 1.6], [0.4, -2.2]].forEach(([dx, dz], i) => { kput(new THREE.CylinderGeometry(1.85, 1.45, 2.6, 16), i % 3 ? km(0x1a1a1c, 0.5) : km(0xb8944e, 0.4), 26 + dx, 1.5 + Math.floor(i / 3) * 2.7, WZ + 15 + dz).rotation.set(i * 0.7, i * 1.3, i * 0.4); });
-  kput(new THREE.CylinderGeometry(5, 5, 13, 32), km(0xc4ccd0, 0.1, { transparent: true, opacity: 0.22, depthWrite: false }), 26, 6.5, WZ + 15, false);   // jar of pods
-  kput(new THREE.CylinderGeometry(5.2, 5.2, 1.4, 32), oak, 26, 13.7, WZ + 15);
-  kput(new THREE.CylinderGeometry(1.1, 1.3, 20, 20), steel, 58, 10, WZ + 9);                                                 // tap and sink
-  kput(new THREE.TorusGeometry(6, 1.1, 14, 28, Math.PI), steel, 58, 20, WZ + 15).rotation.y = Math.PI / 2;
-  kput(new THREE.CylinderGeometry(1.1, 1.1, 4, 20), steel, 58, 18, WZ + 21);
-  kput(new THREE.BoxGeometry(36, 0.3, 30), steel, 58, 0.1, WZ + 29, false); kput(new THREE.BoxGeometry(33, 0.3, 27), km(0x060607, 0.9), 58, 0.16, WZ + 29, false);
+  const marble = (rx, ry) => { const c = document.createElement('canvas'); c.width = c.height = 1024; const x = c.getContext('2d'); x.fillStyle = '#0d0d0f'; x.fillRect(0, 0, 1024, 1024);
+    let sd = 7; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+    for (let i = 0; i < 13; i++) { const gold = i % 4 === 0; x.strokeStyle = gold ? 'rgba(206,170,98,' + (0.22 + rnd() * 0.22) + ')' : 'rgba(235,235,240,' + (0.04 + rnd() * 0.09) + ')'; x.lineWidth = gold ? 0.8 + rnd() * 0.9 : 0.5 + rnd() * 1.3;
+      let px = rnd() * 1024, py = -40; x.beginPath(); x.moveTo(px, py); while (py < 1064) { const nx = px + (rnd() - 0.42) * 190, ny = py + 60 + rnd() * 150; x.quadraticCurveTo(px + (rnd() - 0.5) * 120, (py + ny) / 2, nx, ny); px = nx; py = ny; } x.stroke(); }
+    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; };
+  const WZ = -50, black = km(0x0e0e0f, 0.62), walnut = km(0x4a3323, 0.5), brass = km(0xc8a45e, 0.26, { metalness: 1, envMapIntensity: 1.3 }), ceramic = km(0x18181a, 0.35, { envMapIntensity: 0.6 });
+  kput(new THREE.BoxGeometry(400, 4, 92), new THREE.MeshPhysicalMaterial({ map: marble(2, 0.46), roughness: 0.32, metalness: 0, specularIntensity: 0.1, envMapIntensity: 1 }), 0, -2, WZ + 46, false);      // worktop, top at 0
+  kput(new THREE.BoxGeometry(400, 90, 2), black, 0, -49, WZ + 89, false);                                                              // base cabinet fronts
+  kput(new THREE.BoxGeometry(400, 0.5, 0.5), brass, 0, -4.4, WZ + 90.1, false);                                                         // brass line under the worktop edge
+  kput(new THREE.PlaneGeometry(400, 160), new THREE.MeshPhysicalMaterial({ map: marble(2, 0.8), roughness: 0.4, metalness: 0, specularIntensity: 0.12, envMapIntensity: 1 }), 0, 80, WZ, false);         // marble splashback
+  kput(new THREE.BoxGeometry(400, 0.7, 0.7), brass, 0, 0.35, WZ + 0.35, false);                                                         // brass inlay where wall meets worktop
+  kput(new THREE.BoxGeometry(400, 70, 32), black, 0, 52 + 35, WZ + 16, false);                                                          // wall cabinet, 52 cm above the worktop
+  kput(new THREE.BoxGeometry(400, 0.6, 0.6), brass, 0, 52.3, WZ + 32.2, false);                                                         // brass handle rail
+  for (let i = -3; i <= 3; i++) kput(new THREE.BoxGeometry(0.4, 69, 0.3), km(0x000000, 0.9), i * 60 + 30, 87.4, WZ + 32.05, false);     // door gaps
+  kput(new THREE.BoxGeometry(170, 0.4, 0.8), new THREE.MeshBasicMaterial({ color: 0xffdcae }), 0, 51.7, WZ + 5, false);                 // light strip
+  const gc = document.createElement('canvas'); gc.width = 8; gc.height = 128; const gx = gc.getContext('2d'), gg = gx.createLinearGradient(0, 0, 0, 128); gg.addColorStop(0, 'rgba(255,190,120,0.55)'); gg.addColorStop(1, 'rgba(255,190,120,0)'); gx.fillStyle = gg; gx.fillRect(0, 0, 8, 128);
+  const glow = new THREE.Mesh(new THREE.PlaneGeometry(190, 46), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(gc), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); glow.position.set(0, 29, WZ + 0.15); scene.add(glow);
+  const strip = new THREE.PointLight(0xffb873, 1.1, 0, 0); strip.position.set(0, 46, WZ + 12); scene.add(strip);
+  kput(new THREE.BoxGeometry(22, 30, 1.6), walnut, -34, 14.8, WZ + 3.6).rotation.x = -0.1;                                               // walnut board
+  kput(new THREE.CylinderGeometry(4.6, 4.6, 11, 40), ceramic, -24, 5.5, WZ + 14); kput(new THREE.CylinderGeometry(4.68, 4.68, 0.5, 40), brass, -24, 9.6, WZ + 14, false);   // black crock with a brass band
+  [[-1.6, 0.16], [0.4, -0.1], [2, 0.2]].forEach(([dx, tilt], i) => { kput(new THREE.CylinderGeometry(0.42, 0.42, 14, 10), walnut, -24 + dx, 13.5 + i * 0.5, WZ + 14).rotation.z = -tilt;
+    kput(new THREE.SphereGeometry(1.9, 16, 10), walnut, -24 + dx + Math.sin(tilt) * 7.5, 20.6 + i * 0.5, WZ + 14).scale.set(1, 1.35, 0.35); });
+  [[-2, -1.5], [1.6, -2], [0.2, 1.8], [-1.4, 1.2], [2, 0.6], [0, -0.4], [-2.2, 0], [1.2, 1.6], [0.4, -2.2]].forEach(([dx, dz], i) => { kput(new THREE.CylinderGeometry(1.85, 1.45, 2.6, 16), i % 3 ? km(0x1a1a1c, 0.45) : brass, 26 + dx, 1.5 + Math.floor(i / 3) * 2.7, WZ + 15 + dz).rotation.set(i * 0.7, i * 1.3, i * 0.4); });
+  kput(new THREE.CylinderGeometry(5, 5, 13, 40), km(0xdfe6ea, 0.05, { transparent: true, opacity: 0.16, depthWrite: false, envMapIntensity: 1 }), 26, 6.5, WZ + 15, false);   // glass jar of pods
+  kput(new THREE.CylinderGeometry(5.2, 5.2, 1.2, 40), brass, 26, 13.6, WZ + 15);
+  kput(new THREE.CylinderGeometry(1.0, 1.2, 22, 24), brass, 58, 11, WZ + 9);                                                            // brass tap and a dark sink
+  kput(new THREE.TorusGeometry(6, 1.0, 16, 36, Math.PI), brass, 58, 22, WZ + 15).rotation.y = Math.PI / 2;
+  kput(new THREE.CylinderGeometry(1.0, 1.0, 4, 24), brass, 58, 20, WZ + 21);
+  kput(new THREE.BoxGeometry(36, 0.3, 30), brass, 58, 0.08, WZ + 29, false); kput(new THREE.BoxGeometry(34.6, 0.3, 28.6), km(0x050506, 0.85), 58, 0.14, WZ + 29, false);
 }
 const podIn = mesh(new THREE.CylinderGeometry(1.85, 1.45, 2.6, 28), M.pod, 9, TOP + 8, SLOT_Z, { cast: false }); podIn.visible = false; machine.add(podIn);
 let podT = -1;
@@ -825,7 +831,7 @@ function panel(on) { dispPanel.hidden = !on; }
 let focus = null;
 const backBtn = document.getElementById('zoomBack');
 function focusOn(name, noLook) { focus = name; hotBox.style.display = 'none'; stage.classList.add('focus'); backBtn.hidden = false; panel(false); if (!noLook) lookAt(name); }
-function unfocus(back) { focus = null; hotBox.style.display = ''; stage.classList.remove('focus'); backBtn.hidden = true; panel(false); if (back || podsMode) lookAt('hero'); }
+function unfocus(back) { focus = null; stage.classList.remove('close-up'); hotBox.style.display = ''; stage.classList.remove('focus'); backBtn.hidden = true; panel(false); if (back || podsMode) lookAt('hero'); }
 backBtn.addEventListener('click', () => unfocus(true));
 addEventListener('keydown', e => { if (e.key === 'Escape' && focus) unfocus(true); });
 const HOTS = [
